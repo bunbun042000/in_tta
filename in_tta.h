@@ -1,5 +1,5 @@
 /*
-The ttaplugin-winamp project.
+The ttaplugins-winamp project.
 Copyright (C) 2005-2015 Yamagata Fumihiro
 
 This library is free software; you can redistribute it and/or
