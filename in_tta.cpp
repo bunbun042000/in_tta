@@ -128,7 +128,7 @@ static data_buf remain_data; // for transcoding (buffer for data that is decoded
 
 static void tta_error_message(int error, const in_char *filename)
 {
-	char message[1024];
+	wchar_t message[1024];
 
 #ifdef UNICODE_INPUT_PLUGIN
 	std::wstring name(filename);
@@ -137,38 +137,38 @@ static void tta_error_message(int error, const in_char *filename)
 #endif
 	switch (error) {
 		case TTA_OPEN_ERROR:	
-			wsprintf(message, "Can't open file:\n%ls", name.c_str());
+			wsprintf(message, L"Can't open file:\n%ls", name.c_str());
 			break;
 		case TTA_FORMAT_ERROR:
-			wsprintf(message, "Unknown TTA format version:\n%ls", name.c_str());
+			wsprintf(message, L"Unknown TTA format version:\n%ls", name.c_str());
 			break;
 		case TTA_NOT_SUPPORTED:
-			wsprintf(message, "Not supported file format:\n%ls", name.c_str());
+			wsprintf(message, L"Not supported file format:\n%ls", name.c_str());
 			break;
 		case TTA_FILE_ERROR:
-			wsprintf(message, "File is corrupted:\n%ls", name.c_str());
+			wsprintf(message, L"File is corrupted:\n%ls", name.c_str());
 			break;
 		case TTA_READ_ERROR:
-			wsprintf(message, "Can't read from file:\n%ls", name.c_str());
+			wsprintf(message, L"Can't read from file:\n%ls", name.c_str());
 			break;
 		case TTA_WRITE_ERROR:
-			wsprintf(message, "Can't write to file:\n%ls", name.c_str());
+			wsprintf(message, L"Can't write to file:\n%ls", name.c_str());
 			break;
 		case TTA_MEMORY_ERROR:	
-			wsprintf(message, "Insufficient memory available");
+			wsprintf(message, L"Insufficient memory available");
 			break;
 		case TTA_SEEK_ERROR:
-			wsprintf(message, "file seek error");
+			wsprintf(message, L"file seek error");
 			break;
 		case TTA_PASSWORD_ERROR:
-			wsprintf(message, "password protected file");
+			wsprintf(message, L"password protected file");
 			break;
 		default:
-			wsprintf(message, "Unknown TTA decoder error");
+			wsprintf(message, L"Unknown TTA decoder error");
 			break;
 	}
 
-	MessageBox(mod.hMainWindow, message, "TTA Decoder Error",
+	MessageBox(mod.hMainWindow, message, L"TTA Decoder Error",
 		MB_OK|MB_ICONERROR|MB_SYSTEMMODAL);
 
 }
@@ -197,7 +197,7 @@ static BOOL CALLBACK about_dialog(HWND dialog, UINT message,
 	switch (message) {
 	case WM_INITDIALOG:
 		SetDlgItemText(dialog, IDC_PLUGIN_VERSION,
-			"Winamp plug-in version " PLUGIN_VERSION "\nbased on " 
+			L"Winamp plug-in version " PLUGIN_VERSION "\nbased on " 
 			LIBTTA_VERSION "\n" PROJECT_URL);
 		SetDlgItemText(dialog, IDC_PLUGIN_CREADIT,
 			ORIGINAL_CREADIT01 ORIGINAL_CREADIT02 ORIGINAL_CREADIT03
