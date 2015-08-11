@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef DECODEFILE_H
 #define DECODEFILE_H
 
-#include "..\libtta++\libtta.h"
+#include "libtta.h"
 #include "in_tta.h"
 #include <stdexcept>
 #include <type_traits>

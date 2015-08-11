@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <stdlib.h>
 
 #include "DecodeFile.h"
-#include "..\libtta++\libtta.h"
+#include "libtta.h"
 
 TTAint32 CALLBACK read_callback(TTA_io_callback *io, TTAuint8 *buffer, TTAuint32 size) {
 	TTA_io_callback_wrapper *iocb = (TTA_io_callback_wrapper *)io; 
