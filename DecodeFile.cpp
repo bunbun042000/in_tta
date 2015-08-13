@@ -1,6 +1,6 @@
 /*
 The ttaplugin-winamp project.
-Copyright (C) 2005-2013 Yamagata Fumihiro
+Copyright (C) 2005-2015 Yamagata Fumihiro
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -155,7 +155,7 @@ int CDecodeFile::SetFileName(const wchar_t *filename)
 	decode_pos_ms = 0;
 	seek_needed = -1;
 
-	// Filesize / total samples * number of channel = datasize per sample [byte/sample]
+	// Filesize / (total samples * number of channel) = datasize per sample [byte/sample]
 	// datasize per sample * 8 * samples per sec = bitrate [bit/sec]
 	bitrate = (long)(Filesize / (tta_info.samples * tta_info.nch) * 8 * tta_info.sps / 1000);
 

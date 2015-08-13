@@ -89,7 +89,6 @@ bool CMediaLibrary::GetTagInfo(const std::wstring fn)
 		}
 		else
 		{
-//			FileName = fn;
 			isValidFile = true;
 		}
 		TagDataW.Length = (unsigned long)(TTAFile.audioProperties()->length() * 1000.L);
@@ -100,15 +99,18 @@ bool CMediaLibrary::GetTagInfo(const std::wstring fn)
 		int sec = Lengthbysec % 60;
 
 		std::wstringstream second;
-		if (hour > 0) {
+		if (hour > 0) 
+		{
 			second << std::setw(2) << std::setfill(L'0') << hour << L":" << std::setw(2)
 				<< std::setfill(L'0') << min << L":" << std::setw(2) << std::setfill(L'0') << sec;
 		}
-		else if (min > 0) {
+		else if (min > 0) 
+		{
 			second << std::setw(2) << std::setfill(L'0') << min << L":" << std::setw(2)
 				<< std::setfill(L'0') << sec;
 		}
-		else {
+		else 
+		{
 			second << std::setw(2) << std::setfill(L'0') << sec;
 		}
 
@@ -125,7 +127,8 @@ bool CMediaLibrary::GetTagInfo(const std::wstring fn)
 		TagDataW.Format = ttainfo_temp.str();
 
 		std::wstring temp;
-		if (NULL != TTAFile.ID3v2Tag()) {
+		if (NULL != TTAFile.ID3v2Tag()) 
+		{
 			temp = TTAFile.ID3v2Tag()->title().toCWString();
 			TagDataW.Title = temp;
 			temp = TTAFile.ID3v2Tag()->artist().toCWString();
@@ -156,8 +159,8 @@ bool CMediaLibrary::GetTagInfo(const std::wstring fn)
 			albumArtInfo.mimetype = mtype;
 
 		}
-		else if (NULL != TTAFile.ID3v1Tag()) {
-
+		else if (NULL != TTAFile.ID3v1Tag()) 
+		{
 			std::wstringstream temp_year;
 			std::wstringstream temp_track;
 			temp = TTAFile.ID3v1Tag()->title().toCWString();
@@ -176,7 +179,8 @@ bool CMediaLibrary::GetTagInfo(const std::wstring fn)
 			TagDataW.Track = temp_track.str();
 
 		}
-		else {
+		else 
+		{
 			// do nothing.
 		}
 	}
@@ -184,8 +188,6 @@ bool CMediaLibrary::GetTagInfo(const std::wstring fn)
 	{
 		// Do nothing
 	}
-
-
 
 	return true;
 }
@@ -371,7 +373,6 @@ int CMediaLibrary::SetExtendedFileInfo(const wchar_t *fn, const wchar_t *Metadat
 
 	}
 	else {
-//		FileName = L"";
 		RetCode = 0;
 	}
 
@@ -391,9 +392,6 @@ int CMediaLibrary::WriteExtendedFileInfo()
 	}
 	else
 	{
-//		char mbFileName[MAX_PATH + 1];
-//		size_t strlen = 0;
-//		wcstombs_s(&strlen, mbFileName, MAX_PATH, FileName.c_str(), _TRUNCATE);
 		TagLib::TrueAudio::File TTAFile(FileName.c_str());
 		
 		if (!TTAFile.isValid()) {
@@ -442,7 +440,8 @@ int CMediaLibrary::WriteExtendedFileInfo()
 			TTAFile.ID3v1Tag()->setTrack(_wtoi(TagDataW.Track.c_str()));
 			TTAFile.ID3v1Tag()->setGenre(TagDataW.Genre);
 		}
-		else {
+		else 
+		{
 			// do nothing.
 		}
 		TTAFile.save();
