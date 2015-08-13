@@ -467,7 +467,8 @@ DWORD WINAPI __stdcall DecoderThread (void *p)
 	int done = 0;
 	int len;
 
-	if (!playing_ttafile.isValid() || !playing_ttafile.isDecodable()) {
+	if (!playing_ttafile.isValid() || !playing_ttafile.isDecodable())
+	{
 #ifdef UNICODE_INPUT_PLUGIN
 		tta_error_message(-1, L"");
 #else
@@ -475,14 +476,17 @@ DWORD WINAPI __stdcall DecoderThread (void *p)
 #endif
 		done = 1;
 		return 0;
-	} else {
+	}
+	else
+	{
 		// do nothing
 	}
 
 	int bitrate = playing_ttafile.GetBitrate();
 
 	while (!killDecoderThread) {
-		if(!playing_ttafile.isDecodable()) {
+		if(!playing_ttafile.isDecodable())
+		{
 #ifdef UNICODE_INPUT_PLUGIN
 			tta_error_message(-1, L"");
 #else
@@ -490,30 +494,42 @@ DWORD WINAPI __stdcall DecoderThread (void *p)
 #endif
 			PostMessage(mod.hMainWindow, WM_WA_MPEG_EOF, 0, 0);
 			return 0;
-		} else {
+		} 
+		else 
+		{
 			// do nothing
 		}
 		
-		if (playing_ttafile.GetSeekNeeded() != -1) {
+		if (playing_ttafile.GetSeekNeeded() != -1) 
+		{
 			mod.outMod->Flush((int)playing_ttafile.SeekPosition(&done));
-		} else {
+		} 
+		else
+		{
 			// do nothing
 		}
 
 		if (done) {
-			if (!mod.outMod->IsPlaying()) {
+			if (!mod.outMod->IsPlaying()) 
+			{
 				PostMessage(mod.hMainWindow, WM_WA_MPEG_EOF, 0, 0);
 				return 0;
-			} else {
+			}
+			else
+			{
 				::Sleep(1);
 			}
-		} else if (mod.outMod->CanWrite() >= 
+		} 
+		else if (mod.outMod->CanWrite() >= 
 			((PLAYING_BUFFER_LENGTH * playing_ttafile.GetNumberofChannel() * 
-			playing_ttafile.GetByteSize()) << (mod.dsp_isactive()? 1:0))) {
-				try {
+			playing_ttafile.GetByteSize()) << (mod.dsp_isactive()? 1:0))) 
+		{
+				try
+				{
 					len = playing_ttafile.GetSamples(pcm_buffer, PLAYING_BUFFER_SIZE, &bitrate);
 				}
-				catch (CDecodeFile_exception &ex) {
+				catch (CDecodeFile_exception &ex)
+				{
 #ifdef UNICODE_INPUT_PLUGIN
 					tta_error_message(ex.code(), playing_ttafile.GetFileNameW());
 #else
@@ -525,21 +541,29 @@ DWORD WINAPI __stdcall DecoderThread (void *p)
 					mod.SAVSADeInit();
 					return 0;
 				}
-				if (len == 0) {
+				if (len == 0) 
+				{
 					done = 1;
-				} else {
+				} 
+				else
+				{
 					do_vis(pcm_buffer, len, playing_ttafile.GetOutputBPS(), playing_ttafile.GetDecodePosMs());
-					if (mod.dsp_isactive()) {
+					if (mod.dsp_isactive()) 
+					{
 						len = mod.dsp_dosamples((short *)pcm_buffer, len, playing_ttafile.GetOutputBPS(),
 							playing_ttafile.GetNumberofChannel(), playing_ttafile.GetSampleRate());
-					} else {
+					} 
+					else
+					{
 						// do nothing
 					}
 					mod.outMod->Write((char *)pcm_buffer, len * playing_ttafile.GetNumberofChannel()
 						* (playing_ttafile.GetOutputBPS() >> 3));
 				}
 				mod.SetInfo(bitrate, playing_ttafile.GetSampleRate() / 1000, playing_ttafile.GetNumberofChannel(), 1);
-		} else {
+		} 
+		else
+		{
 			::Sleep(1);
 		}
 	}
