@@ -98,7 +98,6 @@ CDecodeFile::~CDecodeFile(void)
 
 }
 
-#ifdef UNICODE_INPUT_PLUGIN
 int CDecodeFile::SetFileName(const wchar_t *filename)
 {
 	::EnterCriticalSection(&CriticalSection);
@@ -109,8 +108,8 @@ int CDecodeFile::SetFileName(const wchar_t *filename)
 	}
 
 
-	FileNameW = filename;
-	decoderFileHANDLE = CreateFileW(FileNameW.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
+	FileName = filename;
+	decoderFileHANDLE = CreateFileW(FileName.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
 		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (decoderFileHANDLE == INVALID_HANDLE_VALUE || decoderFileHANDLE == NULL) {
 		::LeaveCriticalSection(&CriticalSection);
@@ -170,77 +169,6 @@ int CDecodeFile::SetFileName(const wchar_t *filename)
 
 	return TTA_NO_ERROR;
 }
-#else
-int CDecodeFile::SetFileName(const char *filename)
-{
-	::EnterCriticalSection(&CriticalSection);
-
-	// check for required data presented
-	if (!filename) {
-		throw CDecodeFile_exception(TTA_OPEN_ERROR);
-	}
-
-
-	FileName = filename;
-	decoderFileHANDLE = ::CreateFile(FileName.c_str(), GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE,
-		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-	if (decoderFileHANDLE == INVALID_HANDLE_VALUE || decoderFileHANDLE == NULL) {
-		::LeaveCriticalSection(&CriticalSection);
-		throw CDecodeFile_exception(TTA_OPEN_ERROR);
-	}
-
-	Filesize = ::GetFileSize(decoderFileHANDLE, NULL);
-
-	iocb_wrapper.handle = decoderFileHANDLE;
-	iocb_wrapper.iocb.read = &read_callback;
-	iocb_wrapper.iocb.seek = &seek_callback;
-
-	if (TTA != NULL) {
-		reinterpret_cast< tta::tta_decoder* >(TTA)->~tta_decoder();
-		TTA = NULL;
-	} else {
-		// nothing todo
-	}
-
-	try {
-		TTA = new (&ttadec_mem) tta::tta_decoder((TTA_io_callback *)&iocb_wrapper);
-		TTA->init_get_info(&tta_info, 0);
-	}
-
-	catch (tta::tta_exception &ex) {
-		if (NULL != TTA) {
-			reinterpret_cast< tta::tta_decoder* >(TTA)->~tta_decoder();
-			TTA = NULL;
-		} else {
-			// do nothing
-		}
-
-		::CloseHandle(decoderFileHANDLE);
-		decoderFileHANDLE = INVALID_HANDLE_VALUE;
-		::LeaveCriticalSection(&CriticalSection);
-		throw CDecodeFile_exception(ex.code());
-	}
-	
-	paused = 0;
-	decode_pos_ms = 0;
-	seek_needed = -1;
-
-	// Filesize / total samples * number of channel = datasize per sample [byte/sample]
-	// datasize per sample * 8 * samples per sec = bitrate [bit/sec]
-	bitrate = (long)(Filesize / (tta_info.samples * tta_info.nch) * 8 * tta_info.sps  / 1000);
-
-	if (TTA->seek_allowed){
-		st_state = 1;
-	} else {
-		st_state = 0;
-	}
-
-	::LeaveCriticalSection(&CriticalSection);
-
-	return TTA_NO_ERROR;
-}
-#endif
-
 
 long double CDecodeFile::SeekPosition(int *done)
 {
