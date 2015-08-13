@@ -578,7 +578,7 @@ extern "C"
 	}
 
 	__declspec(dllexport) intptr_t __cdecl
-		winampGetExtendedRead_open(const wchar_t *filename, int *size, int *bps, int *nch, int *srate)
+		winampGetExtendedRead_openW(const wchar_t *filename, int *size, int *bps, int *nch, int *srate)
 	{
 
 		CDecodeFile *dec = &transcode_ttafile;
@@ -588,17 +588,13 @@ extern "C"
 		else {
 			// do nothing
 		}
-		const char *mbFile = reinterpret_cast<const char*>(filename);
-		wchar_t wcsFileName[MAX_PATH + 1];
-		size_t strlen = 0;
-		mbstowcs_s(&strlen, wcsFileName, MAX_PATH + 1, mbFile, _TRUNCATE);
 
 		try {
-			dec->SetFileName(wcsFileName);
+			dec->SetFileName(filename);
 		}
 
 		catch (CDecodeFile_exception &ex) {
-			tta_error_message(ex.code(), wcsFileName);
+			tta_error_message(ex.code(), filename);
 			return (intptr_t)0;
 		}
 
