@@ -232,6 +232,16 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 			extension = mimeType.substr(mimeType.find("/") + 1);
 			isSucceed = true;
 		}
+		else if (m_WriteTag.isValid() && m_WriteTag.GetCurrentFileName() == filename)
+		{
+			FileName = filename;
+			// read Album Art
+			AlbumArt =
+				m_WriteTag.GetAlbumArt(TagLib::ID3v2::AttachedPictureFrame::FrontCover, mimeType);
+			extension = mimeType.substr(mimeType.find("/") + 1);
+			isSucceed = true;
+
+		}
 		else
 		{
 			FileName = filename;
