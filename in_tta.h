@@ -20,5 +20,101 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 #define UNICODE_INPUT_PLUGIN
 
+
 static const __int32 PLAYING_BUFFER_LENGTH = 576;
 static const __int32 TRANSCODING_BUFFER_LENGTH = 5120;
+static const unsigned __int32 TTA1_SIGN = 0x31415454;
+static const __int32 READER_BUFFER_SIZE = 5184;
+static const long double FRAME_TIME = 1.04489795918367346939;
+static const int SEEK_STEP = (int)(FRAME_TIME * 1000);
+
+typedef struct {
+	unsigned __int32 TTAid;
+	unsigned __int16 AudioFormat;
+	unsigned __int16 NumChannels;
+	unsigned __int16 BitsPerSample;
+	unsigned __int32 SampleRate;
+	unsigned __int32 DataLength;
+	unsigned __int32 CRC32;
+} TTAhdr;
+
+typedef struct {
+	unsigned int k0;
+	unsigned int k1;
+	unsigned int sum0;
+	unsigned int sum1;
+} TTAadapt;
+
+typedef struct {
+	int shift;
+	int round;
+	int error;
+	int qm[12];
+	int dx[12];
+	int dl[12];
+} TTAfltst;
+
+typedef struct {
+	TTAfltst fst;
+	TTAadapt rice;
+	int last;
+} TTA_channel_codec;
+
+typedef struct {
+	TTA_channel_codec TTA[2 * MAX_NCH];	// decoder (1 per channel)
+	unsigned int BitCount;	// count of bits in cache
+	unsigned int BitCache;	// bit cache
+	unsigned int FrameCRC;	// CRC32
+	unsigned int FrameTotal;	// total count of frames
+	unsigned int FrameLenD;	// default frame length in samples
+	unsigned int FrameLenL;	// last frame length in samples
+	unsigned int FrameLen;	// current frame length in samples
+	unsigned int FrameNum;	// currently playing frame index
+	unsigned int FramePos;	// the playing position in frame
+	unsigned int *SeekTable;	// the playing position table
+} TTAcodec;
+
+typedef struct {
+	BYTE Buffer[READER_BUFFER_SIZE];
+	BYTE End;
+	BYTE *Pos;
+} TTA_reader;
+
+typedef struct {
+	wchar_t			FName[MAX_PATH];
+	HANDLE			hFile;		// file handle
+	unsigned short	Nch;		// number of channels
+	unsigned short	Bps;		// bits per sample
+	unsigned short	BSize;		// byte size
+	unsigned int	SampleRate;	// samplerate (sps)
+	unsigned int	DataLength;	// data length in samples
+	unsigned int	Length;		// playback time (sec)
+	unsigned int	FileSize;	// file size (byte)
+	float			Compress;	// compression ratio
+	unsigned int	BitRate;	// bitrate (kbps)
+	unsigned int	Seekable;	// is seekable?
+	tta_error		State;		// return code
+	unsigned int	Offset;		// header size
+} TTAinfo;
+
+typedef struct {
+	unsigned char  Id[3];
+	unsigned char  majorVersion;
+	unsigned char  minorVersion;
+	unsigned char  Flags;
+	char  Size[4];
+} id3v2_tag;
+
+typedef struct {
+	unsigned char Id[8];
+	unsigned char Version[4];
+	unsigned char Size[4];
+	unsigned char Count[4];
+	unsigned char Flags[4];
+	unsigned char Reserved[8];
+} apev2_footer;
+
+typedef struct {
+	unsigned char Size[4];
+	unsigned char Flags[4];
+} apev2_frame;
