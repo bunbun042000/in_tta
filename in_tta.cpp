@@ -52,7 +52,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // For Support Transcoder input (2007/10/15)
-//static __declspec(align(16)) CDecodeFile playing_ttafile;
 static __declspec(align(16)) CDecodeFile transcode_ttafile;
 CMediaLibrary m_ReadTag;
 CMediaLibrary m_WriteTag;
@@ -267,10 +266,8 @@ static int read_fileinfo(TTAinfo *TTAInfo) {
 	// get file size
 	TTAInfo->FileSize = GetFileSize(TTAInfo->hFile, NULL);
 
-	// read metadata
-//	read_apev2_tag(TTAInfo);
+	// skip metadata
 	skip_id3v2_tag(TTAInfo);
-//	read_id3v1_tag(TTAInfo);
 
 	// read TTA header
 	if (!ReadFile(TTAInfo->hFile, &TTAHdr, sizeof(TTAhdr), &result, NULL) ||
@@ -956,7 +953,6 @@ void stop()
 	}
 
 
-//	mod.SetInfo(0, 0, 0, 1);
 	mod.outMod->Close();
 	mod.SAVSADeInit();
 
@@ -972,50 +968,6 @@ void setoutputtime(int time_in_ms) { seek_needed = time_in_ms; }
 void setvolume(int volume) { mod.outMod->SetVolume(volume); }
 void setpan(int pan) { mod.outMod->SetPan(pan); }
 void eq_set(int on, char data[10], int preamp) {}
-#if 0
-int getlength()
-{
-	if (playing_ttafile.isValid() && playing_ttafile.isDecodable()) {
-		return playing_ttafile.GetLengthbymsec();
-	} else {
-		return 0;
-	}
-}
-
-int getoutputtime()
-{
-	if (playing_ttafile.isValid() && playing_ttafile.isDecodable()) { 
-		return (int)(playing_ttafile.GetDecodePosMs() 
-		+ (mod.outMod->GetOutputTime() - mod.outMod->GetWrittenTime())); 
-	} else {
-		return 0;
-	}
-}
-
-void setoutputtime(int time_in_ms)
-{
-	if (playing_ttafile.isValid() && playing_ttafile.isDecodable()) {
-		playing_ttafile.SetSeekNeeded(time_in_ms); 
-	} else {
-		// do nothing
-	}
-
-}
-
-void setvolume(int volume)
-{
-	mod.outMod->SetVolume(volume);
-}
-
-void setpan(int pan)
-{
-	mod.outMod->SetPan(pan);
-}
-void eq_set(int on, char data[10], int preamp)
-{
-	// do nothing.
-}
-#endif
 
 static void do_vis(unsigned char *data, int count, int bps, long double position)
 {
@@ -1023,105 +975,6 @@ static void do_vis(unsigned char *data, int count, int bps, long double position
 	mod.VSAAddPCMData(data, Info.Nch, bps, (int)position);
 }
 
-#if 0
-DWORD WINAPI __stdcall DecoderThread (void *p) 
-{
-
-	int done = 0;
-	int len;
-
-	if (!playing_ttafile.isValid() || !playing_ttafile.isDecodable())
-	{
-		tta_error_message(-1, L"");
-		done = 1;
-		return 0;
-	}
-	else
-	{
-		// do nothing
-	}
-
-	int bitrate = playing_ttafile.GetBitrate();
-
-	while (!killDecoderThread) {
-		if(!playing_ttafile.isDecodable())
-		{
-			tta_error_message(-1, L"");
-			PostMessage(mod.hMainWindow, WM_WA_MPEG_EOF, 0, 0);
-			return 0;
-		} 
-		else 
-		{
-			// do nothing
-		}
-		
-		if (playing_ttafile.GetSeekNeeded() != -1) 
-		{
-			mod.outMod->Flush((int)playing_ttafile.SeekPosition(&done));
-		} 
-		else
-		{
-			// do nothing
-		}
-
-		if (done) {
-			if (!mod.outMod->IsPlaying()) 
-			{
-				PostMessage(mod.hMainWindow, WM_WA_MPEG_EOF, 0, 0);
-				return 0;
-			}
-			else
-			{
-				::Sleep(1);
-			}
-		} 
-		else if (mod.outMod->CanWrite() >= 
-			((PLAYING_BUFFER_LENGTH * playing_ttafile.GetNumberofChannel() * 
-			playing_ttafile.GetByteSize()) << (mod.dsp_isactive()? 1:0))) 
-		{
-				try
-				{
-					len = playing_ttafile.GetSamples(pcm_buffer, PLAYING_BUFFER_SIZE, &bitrate);
-				}
-				catch (CDecodeFile_exception &ex)
-				{
-					tta_error_message(ex.code(), playing_ttafile.GetFileName());
-					PostMessage(mod.hMainWindow, WM_WA_MPEG_EOF, 0, 0);
-					mod.SetInfo(0, 0, 0, 1);
-					mod.outMod->Close();
-					mod.SAVSADeInit();
-					return 0;
-				}
-				if (len == 0) 
-				{
-					done = 1;
-				} 
-				else
-				{
-					do_vis(pcm_buffer, len, playing_ttafile.GetOutputBPS(), playing_ttafile.GetDecodePosMs());
-					if (mod.dsp_isactive()) 
-					{
-						len = mod.dsp_dosamples((short *)pcm_buffer, len, playing_ttafile.GetOutputBPS(),
-							playing_ttafile.GetNumberofChannel(), playing_ttafile.GetSampleRate());
-					} 
-					else
-					{
-						// do nothing
-					}
-					mod.outMod->Write((char *)pcm_buffer, len * playing_ttafile.GetNumberofChannel()
-						* (playing_ttafile.GetOutputBPS() >> 3));
-				}
-				mod.SetInfo(bitrate, playing_ttafile.GetSampleRate() / 1000, playing_ttafile.GetNumberofChannel(), 1);
-		} 
-		else
-		{
-			::Sleep(1);
-		}
-	}
-
-	return 0;
-}
-#endif
 static DWORD WINAPI DecoderThread(void *p) {
 	int done = 0;
 	int len;
@@ -1428,14 +1281,8 @@ static unsigned int unpack_uint32(const unsigned char *ptr) {
 
 static void skip_id3v2_tag(TTAinfo *TTAInfo) {
 	id3v2_tag id3v2;
-//	id3v2_ext id3v2ex;
-//	id3v2_frame frame_header;
-//	char bufTemp[MAX_LINE];
-	wchar_t *data = NULL;
 	int id3_size;
-//	, data_size;
 	DWORD result;
-//	int size;
 
 	if (!ReadFile(TTAInfo->hFile, &id3v2, sizeof(id3v2_tag), &result, NULL) ||
 		result != sizeof(id3v2_tag) || memcmp(id3v2.Id, "ID3", 3)) {
