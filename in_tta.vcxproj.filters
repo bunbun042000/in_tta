@@ -4,9 +4,6 @@
     <ClCompile Include="AlbumArt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DecodeFile.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="in_tta.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -16,9 +13,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AlbumArt.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DecodeFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MediaLibrary.h">

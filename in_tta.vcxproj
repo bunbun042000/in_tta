@@ -243,13 +243,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AlbumArt.cpp" />
-    <ClCompile Include="DecodeFile.cpp" />
     <ClCompile Include="in_tta.cpp" />
     <ClCompile Include="MediaLibrary.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AlbumArt.h" />
-    <ClInclude Include="DecodeFile.h" />
     <ClInclude Include="in_tta.h" />
     <ClInclude Include="MediaLibrary.h" />
     <ClInclude Include="resource.h" />

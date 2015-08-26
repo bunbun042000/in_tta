@@ -36,7 +36,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <windows.h>
 
 #include "AlbumArt.h"
-#include "DecodeFile.h"
+//#include "DecodeFile.h"
 #include "MediaLibrary.h"
 #include "in_tta.h"
 
@@ -52,14 +52,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // For Support Transcoder input (2007/10/15)
-static __declspec(align(16)) CDecodeFile transcode_ttafile;
+//static __declspec(align(16)) CDecodeFile transcode_ttafile;
 CMediaLibrary m_ReadTag;
 CMediaLibrary m_WriteTag;
 
 static const __int32 PLAYING_BUFFER_SIZE = PLAYING_BUFFER_LENGTH * MAX_DEPTH * MAX_NCH;
 static const __int32 TRANSCODING_BUFFER_SIZE = TRANSCODING_BUFFER_LENGTH * MAX_DEPTH * MAX_NCH;
-
-HANDLE heap;
 
 static int paused = 0;
 static int seek_needed = -1;
@@ -68,10 +66,8 @@ static unsigned int decode_pos_ms = 0;
 static BYTE pcm_buffer[PLAYING_BUFFER_SIZE];	// PCM buffer
 static short vis_buffer[PLAYING_BUFFER_SIZE*MAX_NCH];	// vis buffer
 
-static TTAinfo Info;			// currently playing file info
-
-static TTA_reader Reader;
-static TTAcodec Current;
+static decoder_TTA player;
+static decoder_TTA transcoder;
 
 static HANDLE decoder_handle = INVALID_HANDLE_VALUE;
 static DWORD WINAPI __stdcall DecoderThread (void *p);
@@ -287,7 +283,7 @@ static int read_fileinfo(TTAinfo *TTAInfo) {
 	checksum = crc32((BYTE *)&TTAHdr, sizeof(TTAhdr) - 4);
 	if (checksum != TTAHdr.CRC32) {
 		CloseHandle(TTAInfo->hFile);
-		TTAInfo->State = tta_error::TTA_FILE_ERROR;
+		TTAInfo->State = TTA_FILE_ERROR;
 		return -1;
 	}
 
@@ -297,7 +293,7 @@ static int read_fileinfo(TTAinfo *TTAInfo) {
 		TTAHdr.BitsPerSample > MAX_BPS ||
 		TTAHdr.NumChannels > MAX_NCH) {
 		CloseHandle(TTAInfo->hFile);
-		TTAInfo->State = tta_error::TTA_FILE_ERROR;
+		TTAInfo->State = TTA_FILE_ERROR;
 		return -1;
 	}
 
@@ -319,18 +315,18 @@ static int read_fileinfo(TTAinfo *TTAInfo) {
 	return 0;
 }
 
-static int open_TTA_file(const wchar_t *filename, TTAinfo *TTAInfo) {
-	ZeroMemory(TTAInfo, sizeof(TTA_info));
+static int open_TTA_file(const wchar_t *filename, TTAinfo *TTA_Info) {
+	ZeroMemory(TTA_Info, sizeof(TTAinfo));
 
-	lstrcpyn(TTAInfo->FName, filename, MAX_PATH - 1);
-	TTAInfo->hFile = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
+	lstrcpyn(TTA_Info->FName, filename, MAX_PATH - 1);
+	TTA_Info->hFile = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
 		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-	if (TTAInfo->hFile == INVALID_HANDLE_VALUE) {
-		TTAInfo->State = TTA_OPEN_ERROR;
+	if (TTA_Info->hFile == INVALID_HANDLE_VALUE) {
+		TTA_Info->State = TTA_OPEN_ERROR;
 		return -1;
 	}
 
-	return read_fileinfo(TTAInfo);
+	return read_fileinfo(TTA_Info);
 }
 
 //////////////////////// TTA hybrid filter ////////////////////////////
@@ -418,126 +414,127 @@ static void rice_init(TTAadapt *rice, unsigned int k0, unsigned int k1) {
 	rice->sum1 = shift_16[k1];
 }
 
-__inline void reader_init() { Reader.Pos = &Reader.End; }
+__inline void reader_init(TTA_reader *Reader) { Reader->Pos = &Reader->End; }
 
-__inline BYTE reader_read_byte() {
+__inline BYTE reader_read_byte(TTA_reader *Reader, TTAinfo *tta_info) {
 	DWORD result;
 
-	if (Reader.Pos == &Reader.End) {
-		if (!ReadFile(Info.hFile, Reader.Buffer,
+	if (Reader->Pos == &Reader->End) {
+		if (!ReadFile(tta_info->hFile, Reader->Buffer,
 			READER_BUFFER_SIZE, &result, NULL) || !result) return 0;
-		Reader.Pos = Reader.Buffer;
+		Reader->Pos = Reader->Buffer;
 	}
 
-	return *Reader.Pos++;
+	return *Reader->Pos++;
 }
 
-__inline unsigned int reader_read_crc32() {
+__inline unsigned int reader_read_crc32(TTA_reader *Reader, TTAinfo *tta_info) {
 	unsigned int data_size;
 	DWORD result;
 
-	data_size = &Reader.End - Reader.Pos;
+	data_size = &Reader->End - Reader->Pos;
 	if (data_size < 4) {
-		memcpy(Reader.Buffer, Reader.Pos, data_size);
-		if (!ReadFile(Info.hFile, &Reader.Buffer[data_size],
+		memcpy(Reader->Buffer, Reader->Pos, data_size);
+		if (!ReadFile(tta_info->hFile, &Reader->Buffer[data_size],
 			READER_BUFFER_SIZE - data_size, &result, NULL) || !result) return 0;
-		Reader.Pos = Reader.Buffer;
+		Reader->Pos = Reader->Buffer;
 	}
 
-	memcpy(&result, Reader.Pos, 4);
-	Reader.Pos += 4;
+	memcpy(&result, Reader->Pos, 4);
+	Reader->Pos += 4;
 
 	return result;
 }
 
-void decoder_init() {
+void decoder_init(TTAcodec *Current, TTAinfo tta_info) {
 	unsigned int i;
 
-	if (Current.FrameNum == Current.FrameTotal - 1)
-		Current.FrameLen = Current.FrameLenL;
-	else Current.FrameLen = Current.FrameLenD;
+	if (Current->FrameNum == Current->FrameTotal - 1)
+		Current->FrameLen = Current->FrameLenL;
+	else Current->FrameLen = Current->FrameLenD;
 
 	// init entropy decoder
-	for (i = 0; i < Info.Nch; i++) {
-		filter_init(&Current.TTA[i].fst, flt_set[Info.BSize - 1]);
-		rice_init(&Current.TTA[i].rice, 10, 10);
-		Current.TTA[i].last = 0;
+	for (i = 0; i < tta_info.Nch; i++) {
+		filter_init(&Current->TTA[i].fst, flt_set[tta_info.BSize - 1]);
+		rice_init(&Current->TTA[i].rice, 10, 10);
+		Current->TTA[i].last = 0;
 	}
 
-	Current.FrameCRC = 0xFFFFFFFFUL;
-	Current.FramePos = 0;
-	Current.BitCount = 0;
-	Current.BitCache = 0;
+	Current->FrameCRC = 0xFFFFFFFFUL;
+	Current->FramePos = 0;
+	Current->BitCount = 0;
+	Current->BitCache = 0;
 }
 
-int set_position(int move_needed) {
+int set_position(int move_needed, TTA_reader *Reader, TTAcodec *Current, TTAinfo *tta_info) {
 	unsigned int result;
 
-	if (Current.FrameNum >= Current.FrameTotal) return 0;
+	if (Current->FrameNum >= Current->FrameTotal) return 0;
 
-	if (move_needed && Info.Seekable) {
-		result = SetFilePointer(Info.hFile, Current.SeekTable[Current.FrameNum], NULL, FILE_BEGIN);
+	if (move_needed && tta_info->Seekable) {
+		result = SetFilePointer(tta_info->hFile, Current->SeekTable[Current->FrameNum], NULL, FILE_BEGIN);
 		if (result == INVALID_SET_FILE_POINTER && GetLastError() != NO_ERROR) {
-			Info.State = TTA_READ_ERROR;
+			tta_info->State = TTA_READ_ERROR;
 			return -1;
 		}
-		reader_init();
+		reader_init(Reader);
 	}
 
-	decoder_init();
+	decoder_init(Current, *tta_info);
 
 	return 0;
 }
 
 
-int decoder_new() {
+int decoder_new(HANDLE *heap, TTAinfo *tta_info, TTAcodec *Current, TTA_reader *Reader)
+{
 	unsigned int crc, data_offset, size;
 	unsigned int i;
 	DWORD result;
 
 	// check for buffers is free
-	if (Current.SeekTable) stop();
+//	if (Current->SeekTable) stop();
 
-	Current.FrameLenD = (int)(FRAME_TIME * Info.SampleRate);
-	Current.FrameLenL = Info.DataLength % Current.FrameLenD;
-	if (!Current.FrameLenL) Current.FrameLenL = Current.FrameLenD;
-	Current.FrameTotal = Info.DataLength / Current.FrameLenD + (Current.FrameLenL ? 1 : 0);
+	Current->FrameLenD = (int)(FRAME_TIME * tta_info->SampleRate);
+	Current->FrameLenL = tta_info->DataLength % Current->FrameLenD;
+	if (!Current->FrameLenL) Current->FrameLenL = Current->FrameLenD;
+	Current->FrameTotal = tta_info->DataLength / Current->FrameLenD + (Current->FrameLenL ? 1 : 0);
 
 	// allocate memory for seek table
-	size = (Current.FrameTotal * 4) + 4;
-	Current.SeekTable = (unsigned int *)HeapAlloc(heap, 0, size);
-	if (!Current.SeekTable) {
-		Info.State = tta_error::TTA_MEMORY_ERROR;
+	size = (Current->FrameTotal * 4) + 4;
+	Current->SeekTable = (unsigned int *)HeapAlloc(*heap, 0, size);
+	if (!Current->SeekTable) {
+		tta_info->State = TTA_MEMORY_ERROR;
 		return -1;
 	}
 
 	// read seek table
-	if (!ReadFile(Info.hFile, Current.SeekTable, size, &result, NULL) ||
+	if (!ReadFile(tta_info->hFile, Current->SeekTable, size, &result, NULL) ||
 		result != size) {
-		Info.State = TTA_READ_ERROR;
+		tta_info->State = TTA_READ_ERROR;
 		return -1;
 	}
 
-	crc = crc32((BYTE *)Current.SeekTable, size - 4);
-	Info.Seekable = (crc == Current.SeekTable[Current.FrameTotal]);
+	crc = crc32((BYTE *)Current->SeekTable, size - 4);
+	tta_info->Seekable = (crc == Current->SeekTable[Current->FrameTotal]);
 
-	data_offset = Info.Offset + sizeof(TTAhdr) + size;
-	for (i = 0; i < Current.FrameTotal; i++) {
-		size = Current.SeekTable[i];
-		Current.SeekTable[i] = data_offset;
+	data_offset = tta_info->Offset + sizeof(TTAhdr) + size;
+	for (i = 0; i < Current->FrameTotal; i++) {
+		size = Current->SeekTable[i];
+		Current->SeekTable[i] = data_offset;
 		data_offset += size;
 	}
 
-	Current.FrameNum = 0;
+	Current->FrameNum = 0;
 
-	reader_init();
-	set_position(false);
+	reader_init(Reader);
+	set_position(false, Reader, Current, tta_info);
 
 	return 0;
 }
 
-int decode_to_pcmbuffer(BYTE *output, int count) {
-	TTA_channel_codec *dec = Current.TTA;
+int decode_to_pcmbuffer(BYTE *output, TTAinfo *tta_info, TTAcodec *Current, TTA_reader *Reader, int count) {
+	TTA_channel_codec *dec = Current->TTA;
 	TTAfltst *fst;
 	TTAadapt *rice;
 	BYTE *p = output;
@@ -549,7 +546,7 @@ int decode_to_pcmbuffer(BYTE *output, int count) {
 	unsigned int sample_size, buffer_size;
 	int tmp, value, crc_flag, ret;
 
-	sample_size = Info.BSize * Info.Nch;
+	sample_size = tta_info->BSize * tta_info->Nch;
 	buffer_size = count * sample_size;
 
 	for (ret = 0; p < output + buffer_size;) {
@@ -558,33 +555,33 @@ int decode_to_pcmbuffer(BYTE *output, int count) {
 		last = &dec->last;
 		unary = 0;
 
-		if (Current.FramePos == Current.FrameLen) {
-			if (Current.FrameNum == Current.FrameTotal) break;
+		if (Current->FramePos == Current->FrameLen) {
+			if (Current->FrameNum == Current->FrameTotal) break;
 
 			// check frame crc
-			Current.FrameCRC ^= 0xFFFFFFFFUL;
-			crc_flag = (Current.FrameCRC != reader_read_crc32());
-			Current.FrameNum++;
+			Current->FrameCRC ^= 0xFFFFFFFFUL;
+			crc_flag = (Current->FrameCRC != reader_read_crc32(Reader, tta_info));
+			Current->FrameNum++;
 
 			if (crc_flag) ZeroMemory(output, buffer_size);
-			if (set_position(crc_flag) < 0) break;
+			if (set_position(crc_flag, Reader, Current, tta_info) < 0) break;
 		}
 
 		// decode Rice unsigned
-		while (!(Current.BitCache ^ bit_mask[Current.BitCount])) {
-			unary += Current.BitCount;
-			Current.BitCache = reader_read_byte();
-			UPDATE_CRC32(Current.BitCache, Current.FrameCRC);
-			Current.BitCount = 8;
+		while (!(Current->BitCache ^ bit_mask[Current->BitCount])) {
+			unary += Current->BitCount;
+			Current->BitCache = reader_read_byte(Reader, tta_info);
+			UPDATE_CRC32(Current->BitCache, Current->FrameCRC);
+			Current->BitCount = 8;
 		}
 
-		while (Current.BitCache & 1) {
+		while (Current->BitCache & 1) {
 			unary++;
-			Current.BitCache >>= 1;
-			Current.BitCount--;
+			Current->BitCache >>= 1;
+			Current->BitCount--;
 		}
-		Current.BitCache >>= 1;
-		Current.BitCount--;
+		Current->BitCache >>= 1;
+		Current->BitCount--;
 
 		switch (unary) {
 		case 0: depth = 0; k = rice->k0; break;
@@ -594,16 +591,16 @@ int decode_to_pcmbuffer(BYTE *output, int count) {
 		}
 
 		if (k) {
-			while (Current.BitCount < k) {
-				tmp = reader_read_byte();
-				UPDATE_CRC32(tmp, Current.FrameCRC);
-				Current.BitCache |= tmp << Current.BitCount;
-				Current.BitCount += 8;
+			while (Current->BitCount < k) {
+				tmp = reader_read_byte(Reader, tta_info);
+				UPDATE_CRC32(tmp, Current->FrameCRC);
+				Current->BitCache |= tmp << Current->BitCount;
+				Current->BitCount += 8;
 			}
-			binary = Current.BitCache & bit_mask[k];
-			Current.BitCache >>= k;
-			Current.BitCount -= k;
-			Current.BitCache &= bit_mask[Current.BitCount];
+			binary = Current->BitCache & bit_mask[k];
+			Current->BitCache >>= k;
+			Current->BitCount -= k;
+			Current->BitCache &= bit_mask[Current->BitCount];
 			value = (unary << k) + binary;
 		}
 		else value = unary;
@@ -632,14 +629,14 @@ int decode_to_pcmbuffer(BYTE *output, int count) {
 		// decompress stage 2: fixed order 1 prediction
 		value += PREDICTOR1(*last, 5); *last = value;
 
-		if (dec < Current.TTA + Info.Nch - 1) {
+		if (dec < Current->TTA + tta_info->Nch - 1) {
 			*s++ = value;
 			dec++;
 		}
 		else {
 			*s = value;
-			if (Info.Nch == 1) {
-				if (Info.BSize == 2) {
+			if (tta_info->Nch == 1) {
+				if (tta_info->BSize == 2) {
 					WRITE_BUFFER2(p, s);
 				}
 				else { // bsize == 3
@@ -652,7 +649,7 @@ int decode_to_pcmbuffer(BYTE *output, int count) {
 				p += sample_size;
 				w = p - 1;
 
-				if (Info.BSize == 2) {
+				if (tta_info->BSize == 2) {
 					*s += *r / 2; WRITE_BUFFER2(w, s);
 					while (r > cache) {
 						*r = *s-- - *r;	WRITE_BUFFER2(w, r); *r--;
@@ -669,8 +666,8 @@ int decode_to_pcmbuffer(BYTE *output, int count) {
 			}
 
 			s = cache;
-			Current.FramePos++; ret++;
-			dec = Current.TTA;
+			Current->FramePos++; ret++;
+			dec = Current->TTA;
 		}
 	}
 
@@ -789,8 +786,8 @@ void init()
 	remain_data.data_length = 0;
 	remain_data.buffer = NULL;
 
-	heap = GetProcessHeap();
-	ZeroMemory(&Info, sizeof(TTA_info));
+	player.heap = GetProcessHeap();
+	ZeroMemory(&player.info, sizeof(TTAinfo));
 
 	Wasabi_Init();
 }
@@ -819,7 +816,7 @@ void getfileinfo(const wchar_t *file, wchar_t *title, int *length_in_ms)
 	if (!file || !*file)
 	{
 		// invalid filename may be playing file
-			*length_in_ms = get_info_data(&Info, title);
+			*length_in_ms = get_info_data(&player.info, title);
 			title = L"";
 	} else {
 		TagLib::FileName fn(file);
@@ -845,7 +842,7 @@ int isourfile(const in_char *filename)
 } 
 
 void show_bitrate(int bitrate) {
-	mod.SetInfo(bitrate, Info.SampleRate / 1000, Info.Nch, 1);
+	mod.SetInfo(bitrate, player.info.SampleRate / 1000, player.info.Nch, 1);
 }
 
 int play(const wchar_t *filename)
@@ -857,34 +854,34 @@ int play(const wchar_t *filename)
 	if (!filename || !*filename) return -1;
 
 	// open TTA file
-	if (open_TTA_file(filename, &Info) < 0) {
-		tta_error_message(Info.State, filename);
+	if (open_TTA_file(filename, &player.info) < 0) {
+		tta_error_message(player.info.State, filename);
 		return 1;
 	}
 
-	if (decoder_new() < 0) {
-		tta_error_message(Info.State, filename);
+	if (decoder_new(&player.heap, &player.info, &player.Current, &player.Reader) < 0) {
+		tta_error_message(player.info.State, filename);
 		return 1;
 	}
 
 	paused = 0;
 	decode_pos_ms = 0;
 	seek_needed = -1;
-	mod.is_seekable = Info.Seekable;
+	mod.is_seekable = player.info.Seekable;
 
-	maxlatency = mod.outMod->Open(Info.SampleRate, Info.Nch, Info.Bps, -1, -1);
+	maxlatency = mod.outMod->Open(player.info.SampleRate, player.info.Nch, player.info.Bps, -1, -1);
 	if (maxlatency < 0) {
-		CloseHandle(Info.hFile);
-		Info.hFile = INVALID_HANDLE_VALUE;
+		CloseHandle(player.info.hFile);
+		player.info.hFile = INVALID_HANDLE_VALUE;
 		return 1;
 	}
 
 	// setup information display
-	show_bitrate(Info.BitRate);
+	show_bitrate(player.info.BitRate);
 
 	// initialize vis stuff
-	mod.SAVSAInit(maxlatency, Info.SampleRate);
-	mod.VSASetInfo(Info.Nch, Info.SampleRate);
+	mod.SAVSAInit(maxlatency, player.info.SampleRate);
+	mod.VSASetInfo(player.info.Nch, player.info.SampleRate);
 
 	// set the output plug-ins default volume
 	mod.outMod->SetVolume(-666);
@@ -942,10 +939,10 @@ void stop()
 	}
 
 
-	if (Info.hFile != INVALID_HANDLE_VALUE) 
+	if (player.info.hFile != INVALID_HANDLE_VALUE) 
 	{
-		CloseHandle(Info.hFile);
-		Info.hFile = INVALID_HANDLE_VALUE;
+		CloseHandle(player.info.hFile);
+		player.info.hFile = INVALID_HANDLE_VALUE;
 	}
 	else
 	{
@@ -956,13 +953,13 @@ void stop()
 	mod.outMod->Close();
 	mod.SAVSADeInit();
 
-	if (Current.SeekTable) {
-		HeapFree(heap, 0, Current.SeekTable);
-		Current.SeekTable = NULL;
+	if (player.Current.SeekTable) {
+		HeapFree(player.heap, 0, player.Current.SeekTable);
+		player.Current.SeekTable = NULL;
 	}
 
 }
-int  getlength() { return Info.Length; }
+int  getlength() { return player.info.Length; }
 int  getoutputtime() { return decode_pos_ms + (mod.outMod->GetOutputTime() - mod.outMod->GetWrittenTime()); }
 void setoutputtime(int time_in_ms) { seek_needed = time_in_ms; }
 void setvolume(int volume) { mod.outMod->SetVolume(volume); }
@@ -971,8 +968,8 @@ void eq_set(int on, char data[10], int preamp) {}
 
 static void do_vis(unsigned char *data, int count, int bps, long double position)
 {
-	mod.SAAddPCMData(data, Info.Nch, bps, (int)position);
-	mod.VSAAddPCMData(data, Info.Nch, bps, (int)position);
+	mod.SAAddPCMData(data, player.info.Nch, bps, (int)position);
+	mod.VSAAddPCMData(data, player.info.Nch, bps, (int)position);
 }
 
 static DWORD WINAPI DecoderThread(void *p) {
@@ -981,19 +978,19 @@ static DWORD WINAPI DecoderThread(void *p) {
 
 	while (!killDecoderThread) {
 		if (seek_needed != -1) {
-			if (seek_needed >= Info.Length) {
-				decode_pos_ms = Info.Length;
+			if (seek_needed >= player.info.Length) {
+				decode_pos_ms = player.info.Length;
 				mod.outMod->Flush(decode_pos_ms);
 				done = 1;
 			}
 			else {
-				Current.FrameNum = seek_needed / SEEK_STEP;
-				decode_pos_ms = Current.FrameNum * SEEK_STEP;
+				player.Current.FrameNum = seek_needed / SEEK_STEP;
+				decode_pos_ms = player.Current.FrameNum * SEEK_STEP;
 				seek_needed = -1;
 				mod.outMod->Flush(decode_pos_ms);
-				Current.FramePos = -1;
+				player.Current.FramePos = -1;
 			}
-			if (set_position(true)) return 0;
+			if (set_position(true, &player.Reader, &player.Current, &player.info)) return 0;
 		}
 		if (done) {
 			mod.outMod->CanWrite();
@@ -1004,15 +1001,15 @@ static DWORD WINAPI DecoderThread(void *p) {
 			else Sleep(10);
 		}
 		else if (mod.outMod->CanWrite() >=
-			((576 * Info.Nch * Info.BSize) << (mod.dsp_isactive() ? 1 : 0))) {
-			if (!(len = decode_to_pcmbuffer(pcm_buffer, 576))) done = 1;
+			((576 * player.info.Nch * player.info.BSize) << (mod.dsp_isactive() ? 1 : 0))) {
+			if (!(len = decode_to_pcmbuffer(pcm_buffer, &player.info, &player.Current, &player.Reader, 576))) done = 1;
 			else {
-				decode_pos_ms += (len * 1000) / Info.SampleRate;
-				do_vis(pcm_buffer, len, Info.Bps, decode_pos_ms);
+				decode_pos_ms += (len * 1000) / player.info.SampleRate;
+				do_vis(pcm_buffer, len, player.info.Bps, decode_pos_ms);
 				if (mod.dsp_isactive())
-					len = mod.dsp_dosamples((short *)pcm_buffer, len, Info.Bps,
-						Info.Nch, Info.SampleRate);
-				mod.outMod->Write((char *)pcm_buffer, len * Info.Nch * (Info.Bps >> 3));
+					len = mod.dsp_dosamples((short *)pcm_buffer, len, player.info.Bps,
+						player.info.Nch, player.info.SampleRate);
+				mod.outMod->Write((char *)pcm_buffer, len * player.info.Nch * (player.info.Bps >> 3));
 			}
 		}
 		else Sleep(20);
@@ -1074,27 +1071,36 @@ extern "C"
 		winampGetExtendedRead_openW(const wchar_t *filename, int *size, int *bps, int *nch, int *srate)
 	{
 
-		CDecodeFile *dec = &transcode_ttafile;
-		if (!dec->isValid()) {
-			return (intptr_t)0;
-		}
-		else {
-			// do nothing
+//		CDecodeFile *dec = &transcode_ttafile;
+//		if (!dec->isValid()) {
+//			return (intptr_t)0;
+//		}
+//		else {
+//			// do nothing
+//		}
+		transcoder.heap = GetProcessHeap();
+		ZeroMemory(&transcoder.info, sizeof(TTAinfo));
+
+		// open TTA file
+		if (open_TTA_file(filename, &transcoder.info) < 0) {
+			tta_error_message(transcoder.info.State, filename);
+			return 1;
 		}
 
-		try {
-			dec->SetFileName(filename);
+		if (decoder_new(&transcoder.heap, &transcoder.info, &transcoder.Current, &transcoder.Reader) < 0) {
+			tta_error_message(transcoder.info.State, filename);
+			return 1;
 		}
 
-		catch (CDecodeFile_exception &ex) {
-			tta_error_message(ex.code(), filename);
-			return (intptr_t)0;
-		}
+		paused = 0;
+		decode_pos_ms = 0;
+		seek_needed = -1;
+		mod.is_seekable = transcoder.info.Seekable;
 
-		*bps = dec->GetBitsperSample();
-		*nch = dec->GetNumberofChannel();
-		*srate = dec->GetSampleRate();
-		*size = dec->GetDataLength() * (*bps / 8) * (*nch);
+		*bps = transcoder.info.Bps;
+		*nch = transcoder.info.Nch;
+		*srate = transcoder.info.SampleRate;
+		*size = transcoder.info.DataLength * (*bps / 8) * (*nch);
 		remain_data.data_length = 0;
 		if (NULL != remain_data.buffer) {
 			delete[] remain_data.buffer;
@@ -1104,22 +1110,23 @@ extern "C"
 			// do nothing
 		}
 
-		return (intptr_t)dec;
+		return (intptr_t)&transcoder;
 	}
 
 	__declspec(dllexport) intptr_t __cdecl winampGetExtendedRead_getData(intptr_t handle, char *dest, int len, int *killswitch)
 	{
-		CDecodeFile *dec = (CDecodeFile *)handle;
+		decoder_TTA *trans = (decoder_TTA *)handle;
 		unsigned char *buf = NULL;
 		int dest_used = 0;
 		int n = 0;
-		int bitrate;
 		int32_t decoded_bytes = 0;
 
-		if (!dec->isDecodable()) {
+		if (trans->info.hFile == INVALID_HANDLE_VALUE)
+		{
 			return (intptr_t)-1;
 		}
-		else {
+		else
+		{
 			// do nothing
 		}
 
@@ -1149,38 +1156,38 @@ extern "C"
 
 		while (dest_used < len && !*killswitch) {
 			// do we need to decode more?
-			if (n >= decoded_bytes) {
-				try {
-					decoded_bytes = dec->GetSamples(buf, TRANSCODING_BUFFER_SIZE, &bitrate);
-				}
-				catch (CDecodeFile_exception &ex) {
-					tta_error_message(ex.code(), dec->GetFileName());
-					dest_used = -1;
-					break;
-				}
+			if (n >= decoded_bytes) 
+			{
+				decoded_bytes = decode_to_pcmbuffer(buf, &trans->info, &trans->Current, &trans->Reader, TRANSCODING_BUFFER_LENGTH);
 
-				if (0 == decoded_bytes) {
+				if (0 == decoded_bytes) 
+				{
 					break; // end of stream
 				}
-				else {
-					decoded_bytes = decoded_bytes * dec->GetBitsperSample() / 8 * dec->GetNumberofChannel();
+				else
+				{
+					decoded_bytes = decoded_bytes * trans->info.Bps / 8 * trans->info.Nch;
 					n = min(len - dest_used, decoded_bytes);
-					if (n > 0) {
+					if (n > 0)
+					{
 						memcpy_s(dest + dest_used, len - dest_used, buf, n);
 						dest_used += n;
 					}
-					else {
+					else
+					{
 						// do nothing
 					}
 				}
 			}
-			else {
+			else 
+			{
 				// do nothing
 			}
 		}
 
 		// copy as much as we can back to winamp
-		if (n > 0 && n < decoded_bytes) {
+		if (n > 0 && n < decoded_bytes)
+		{
 			remain_data.data_length = decoded_bytes - n;
 			if (NULL != remain_data.buffer)
 			{
@@ -1193,6 +1200,10 @@ extern "C"
 			}
 			remain_data.buffer = new BYTE[remain_data.data_length];
 			memcpy_s(remain_data.buffer, remain_data.data_length, buf + n, remain_data.data_length);
+		}
+		else
+		{
+			// Do nothing
 		}
 
 		if (NULL != buf)
@@ -1212,11 +1223,16 @@ extern "C"
 	__declspec( dllexport ) int __cdecl winampGetExtendedRead_setTime(intptr_t handle, int millisecs)
 	{
 		int done = 0;
-		CDecodeFile *dec = (CDecodeFile *)handle;
-		if (NULL != dec && dec->isValid() && dec->isDecodable()) {
-			dec->SetSeekNeeded(millisecs);
-			dec->SeekPosition(&done);
-		} else {
+		decoder_TTA *trans = (decoder_TTA *)handle;
+		if (NULL != trans && trans->info.hFile != INVALID_HANDLE_VALUE)
+		{
+			trans->Current.FrameNum = millisecs / SEEK_STEP;
+			decode_pos_ms = player.Current.FrameNum * SEEK_STEP;
+			trans->Current.FramePos = -1;
+			set_position(true, &trans->Reader, &trans->Current, &trans->info);
+		} 
+		else
+		{
 			return 0;
 		}
 		return 1;
@@ -1231,10 +1247,14 @@ extern "C"
 			// nothing to do
 		}
 
-		CDecodeFile *dec = (CDecodeFile *)handle;
-		if (NULL != dec && dec->isValid()) {
-			dec = NULL;
-		} else {
+		decoder_TTA *trans = (decoder_TTA *)handle;
+		if (NULL != trans && trans->info.hFile != INVALID_HANDLE_VALUE)
+		{
+			::CloseHandle(trans->info.hFile);
+			trans->info.hFile = INVALID_HANDLE_VALUE;
+		}
+		else
+		{
 			// do nothing
 		}
 
@@ -1254,6 +1274,7 @@ static unsigned int unpack_sint28(const char *ptr) {
 	return value;
 }
 
+#if 0
 static unsigned int unpack_sint32(const char *ptr) {
 	unsigned int value = 0;
 
@@ -1277,7 +1298,7 @@ static unsigned int unpack_uint32(const unsigned char *ptr) {
 
 	return value;
 }
-
+#endif
 
 static void skip_id3v2_tag(TTAinfo *TTAInfo) {
 	id3v2_tag id3v2;

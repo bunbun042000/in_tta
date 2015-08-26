@@ -22,13 +22,14 @@
     <ProjectGuid>{67DE0204-5F5F-48A7-93F8-9D403EB9CEE0}</ProjectGuid>
     <RootNamespace>in_tta</RootNamespace>
     <Keyword>MFCDLLProj</Keyword>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
     <UseOfAtl>false</UseOfAtl>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
     <CLRSupport>false</CLRSupport>
     <WholeProgramOptimization>false</WholeProgramOptimization>
     <PlatformToolset>v140</PlatformToolset>
@@ -44,7 +45,7 @@
   </PropertyGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>PGOptimize</WholeProgramOptimization>
     <UseOfMfc>false</UseOfMfc>
     <PlatformToolset>v140</PlatformToolset>
@@ -107,7 +108,11 @@
       <UseLibraryDependencyInputs>true</UseLibraryDependencyInputs>
     </ProjectReference>
     <Link>
+<<<<<<< Updated upstream
+      <AdditionalDependencies>tagd.lib;libtta.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+=======
       <AdditionalDependencies>tagd.lib;libtta.lib;shlwapi.lib;zlibd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+>>>>>>> Stashed changes
       <ShowProgress>LinkVerboseLib</ShowProgress>
       <AdditionalLibraryDirectories>$(SolutionDir)..\libraries\lib;$(SolutionDir)libtta++\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc.lib;libcmt.lib;msvcrt.lib;libcd.lib;libcmtd.lib</IgnoreSpecificDefaultLibraries>
@@ -132,13 +137,8 @@
       <MapExports>true</MapExports>
     </Link>
     <PostBuildEvent>
-<<<<<<< HEAD
-      <Command>"$(ProgramFiles)\NSIS\makensis" /V1 "$(SolutionDir)NSIS\ttaplugins-winamp_installer_debug.nsi"
-"$(SolutionDir)NSIS\$(SolutionName)_v3_2_Beta21_debug.exe" /S</Command>
-=======
       <Command>
       </Command>
->>>>>>> in_tta
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release1|Win32'">
