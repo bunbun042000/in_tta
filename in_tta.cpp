@@ -52,7 +52,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // For Support Transcoder input (2007/10/15)
-//static __declspec(align(16)) CDecodeFile transcode_ttafile;
 CMediaLibrary m_ReadTag;
 CMediaLibrary m_WriteTag;
 
@@ -750,8 +749,7 @@ static BOOL CALLBACK about_dialog(HWND dialog, UINT message,
 	switch (message) {
 	case WM_INITDIALOG:
 		SetDlgItemText(dialog, IDC_PLUGIN_VERSION,
-			L"Winamp plug-in version " PLUGIN_VERSION "\nbased on " 
-			LIBTTA_VERSION "\n" PROJECT_URL);
+			L"Winamp plug-in version " PLUGIN_VERSION "\n" PROJECT_URL);
 		SetDlgItemText(dialog, IDC_PLUGIN_CREADIT,
 			ORIGINAL_CREADIT01 ORIGINAL_CREADIT02 ORIGINAL_CREADIT03
 			CREADIT01 CREADIT02);
@@ -1071,13 +1069,6 @@ extern "C"
 		winampGetExtendedRead_openW(const wchar_t *filename, int *size, int *bps, int *nch, int *srate)
 	{
 
-//		CDecodeFile *dec = &transcode_ttafile;
-//		if (!dec->isValid()) {
-//			return (intptr_t)0;
-//		}
-//		else {
-//			// do nothing
-//		}
 		transcoder.heap = GetProcessHeap();
 		ZeroMemory(&transcoder.info, sizeof(TTAinfo));
 
@@ -1273,32 +1264,6 @@ static unsigned int unpack_sint28(const char *ptr) {
 
 	return value;
 }
-
-#if 0
-static unsigned int unpack_sint32(const char *ptr) {
-	unsigned int value = 0;
-
-	if (ptr[0] & 0x80) return 0;
-
-	value = value | ptr[0];
-	value = (value << 8) | ptr[1];
-	value = (value << 8) | ptr[2];
-	value = (value << 8) | ptr[3];
-
-	return value;
-}
-
-static unsigned int unpack_uint32(const unsigned char *ptr) {
-	unsigned int value = 0;
-
-	value = value | ptr[3];
-	value = (value << 8) | ptr[2];
-	value = (value << 8) | ptr[1];
-	value = (value << 8) | ptr[0];
-
-	return value;
-}
-#endif
 
 static void skip_id3v2_tag(TTAinfo *TTAInfo) {
 	id3v2_tag id3v2;
