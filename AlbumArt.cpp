@@ -52,8 +52,6 @@ protected:
 };
 
 extern In_Module mod; // TODO: change if you called yours something else
-extern CMediaLibrary m_ReadTag;
-extern CMediaLibrary m_WriteTag;
 
 #define WASABI_API_MEMMGR memmgr
 
@@ -223,48 +221,25 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 
 	if (!isSucceed || _wcsicmp(FileName.c_str(), filename))
 	{
-		if (m_ReadTag.isValid() && m_ReadTag.GetCurrentFileName() == filename)
-		{
-			FileName = filename;
-			// read Album Art
-			AlbumArt =
-				m_ReadTag.GetAlbumArt(TagLib::ID3v2::AttachedPictureFrame::FrontCover, mimeType);
-			extension = mimeType.substr(mimeType.find("/") + 1);
-			isSucceed = true;
-		}
-		else if (m_WriteTag.isValid() && m_WriteTag.GetCurrentFileName() == filename)
-		{
-			FileName = filename;
-			// read Album Art
-			AlbumArt =
-				m_WriteTag.GetAlbumArt(TagLib::ID3v2::AttachedPictureFrame::FrontCover, mimeType);
-			extension = mimeType.substr(mimeType.find("/") + 1);
-			isSucceed = true;
+		FileName = filename;
 
+		TagLib::TrueAudio::File TagFile(FileName.c_str());
+
+		if (!TagFile.isValid())
+		{
+			isSucceed = false;
+			::LeaveCriticalSection(&CriticalSection);
+			return retval;
 		}
 		else
 		{
-			FileName = filename;
-
-			TagLib::TrueAudio::File TagFile(FileName.c_str());
-
-			if (!TagFile.isValid())
-			{
-				isSucceed = false;
-				::LeaveCriticalSection(&CriticalSection);
-				return retval;
-			}
-			else {
-				isSucceed = true;
-			}
-
-			// read Album Art
-			AlbumArt =
-				TagFile.ID3v2Tag()->albumArt(TagLib::ID3v2::AttachedPictureFrame::FrontCover, mimeType);
-
-			extension = mimeType.substr(mimeType.find("/") + 1);
+			isSucceed = true;
 		}
 
+		// read Album Art
+		AlbumArt =
+			TagFile.ID3v2Tag()->albumArt(TagLib::ID3v2::AttachedPictureFrame::FrontCover, mimeType);
+			extension = mimeType.substr(mimeType.find("/") + 1);
 	}
 	else
 	{

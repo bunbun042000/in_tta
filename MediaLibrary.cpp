@@ -153,10 +153,6 @@ bool CMediaLibrary::GetTagInfo(const std::wstring fn)
 			TagDataW.Disc = temp;
 			temp = TTAFile.ID3v2Tag()->BPM().toCWString();
 			TagDataW.BPM = temp;
-			TagLib::String mtype;
-			albumArtInfo.Albumart = TTAFile.ID3v2Tag()->albumArt(TagLib::ID3v2::AttachedPictureFrame::FrontCover, mtype);
-			albumArtInfo.arttype = TagLib::ID3v2::AttachedPictureFrame::FrontCover;
-			albumArtInfo.mimetype = mtype;
 
 		}
 		else if (NULL != TTAFile.ID3v1Tag()) 
@@ -436,7 +432,6 @@ int CMediaLibrary::WriteExtendedFileInfo()
 			TTAFile.ID3v2Tag()->setDisc(temp);
 			temp = TagLib::String(TagDataW.BPM);
 			TTAFile.ID3v2Tag()->setBPM(temp);
-			TTAFile.ID3v2Tag()->setAlbumArt(albumArtInfo.Albumart, albumArtInfo.arttype, albumArtInfo.mimetype);
 
 		}
 		else if (NULL != TTAFile.ID3v1Tag(true)) {
@@ -459,25 +454,4 @@ int CMediaLibrary::WriteExtendedFileInfo()
 	::LeaveCriticalSection(&CriticalSection);
 
 	return 1;
-}
-
-TagLib::ByteVector CMediaLibrary::GetAlbumArt(TagLib::ID3v2::AttachedPictureFrame::Type arttype, TagLib::String &mimetype)
-{
-	if (arttype == albumArtInfo.arttype)
-	{
-		mimetype = albumArtInfo.mimetype;
-		return albumArtInfo.Albumart;
-	}
-	else
-	{
-		// Do nothing
-	}
-	return TagLib::ByteVector::null;
-}
-
-void CMediaLibrary::SetAlbumArt(const TagLib::ByteVector &v, TagLib::ID3v2::AttachedPictureFrame::Type arttype, TagLib::String &mimetype)
-{
-	albumArtInfo.Albumart = v;
-	albumArtInfo.arttype = arttype;
-	albumArtInfo.mimetype = mimetype;
 }

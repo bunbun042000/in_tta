@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define AFX_MediaLibrary_H__997DC726_50DB_46B4_A156_DB5E92EC2BE8__INCLUDED_
 
 #include "..\Winamp SDK\Winamp\wa_ipc.h"
-//#include "libtta.h"
 
 #include <taglib/tstring.h>
 #include <taglib/trueaudiofile.h>
@@ -51,13 +50,6 @@ struct TagInfo
 	std::wstring	BPM;
 };
 
-struct AlbumArtInfo
-{
-	TagLib::ByteVector	Albumart;
-	TagLib::ID3v2::AttachedPictureFrame::Type arttype;
-	TagLib::String mimetype;
-};
-
 class CMediaLibrary  
 {
 public:
@@ -68,8 +60,6 @@ public:
 	__int32  WriteExtendedFileInfo();
 	std::wstring GetCurrentFileName() { return FileName; };
 	bool	isValid() { return isValidFile; };
-	TagLib::ByteVector	GetAlbumArt(TagLib::ID3v2::AttachedPictureFrame::Type arttype, TagLib::String &mimetype);
-	void				SetAlbumArt(const TagLib::ByteVector &v, TagLib::ID3v2::AttachedPictureFrame::Type arttype, TagLib::String &mimetype);
 
 private:
 
@@ -78,7 +68,6 @@ private:
 	DWORD				GetTagTime;
 	std::wstring		FileName;
 	bool				isValidFile;
-	AlbumArtInfo		albumArtInfo;
 
 	void FlushCache(void);
 	bool GetTagInfo(const std::wstring fn);
