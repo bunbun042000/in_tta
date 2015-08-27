@@ -415,7 +415,7 @@ static void rice_init(TTAadapt *rice, unsigned int k0, unsigned int k1) {
 
 __inline void reader_init(TTA_reader *Reader) { Reader->Pos = &Reader->End; }
 
-__inline BYTE reader_read_byte(TTA_reader *Reader, TTAinfo *tta_info) {
+__inline BYTE reader_read_byte(TTA_reader *Reader, TTAinfo *tta_info, TTAcodec *Current) {
 	DWORD result;
 
 	if (Reader->Pos == &Reader->End) {
@@ -423,11 +423,11 @@ __inline BYTE reader_read_byte(TTA_reader *Reader, TTAinfo *tta_info) {
 			READER_BUFFER_SIZE, &result, NULL) || !result) return 0;
 		Reader->Pos = Reader->Buffer;
 	}
-
+	Current->read_bytes++;
 	return *Reader->Pos++;
 }
 
-__inline unsigned int reader_read_crc32(TTA_reader *Reader, TTAinfo *tta_info) {
+__inline unsigned int reader_read_crc32(TTA_reader *Reader, TTAinfo *tta_info, TTAcodec *Current) {
 	unsigned int data_size;
 	DWORD result;
 
@@ -440,6 +440,7 @@ __inline unsigned int reader_read_crc32(TTA_reader *Reader, TTAinfo *tta_info) {
 	}
 
 	memcpy(&result, Reader->Pos, 4);
+	Current->read_bytes += 4;
 	Reader->Pos += 4;
 
 	return result;
@@ -463,6 +464,7 @@ void decoder_init(TTAcodec *Current, TTAinfo tta_info) {
 	Current->FramePos = 0;
 	Current->BitCount = 0;
 	Current->BitCache = 0;
+
 }
 
 int set_position(int move_needed, TTA_reader *Reader, TTAcodec *Current, TTAinfo *tta_info) {
@@ -559,7 +561,7 @@ int decode_to_pcmbuffer(BYTE *output, TTAinfo *tta_info, TTAcodec *Current, TTA_
 
 			// check frame crc
 			Current->FrameCRC ^= 0xFFFFFFFFUL;
-			crc_flag = (Current->FrameCRC != reader_read_crc32(Reader, tta_info));
+			crc_flag = (Current->FrameCRC != reader_read_crc32(Reader, tta_info, Current));
 			Current->FrameNum++;
 
 			if (crc_flag) ZeroMemory(output, buffer_size);
@@ -569,7 +571,7 @@ int decode_to_pcmbuffer(BYTE *output, TTAinfo *tta_info, TTAcodec *Current, TTA_
 		// decode Rice unsigned
 		while (!(Current->BitCache ^ bit_mask[Current->BitCount])) {
 			unary += Current->BitCount;
-			Current->BitCache = reader_read_byte(Reader, tta_info);
+			Current->BitCache = reader_read_byte(Reader, tta_info, Current);
 			UPDATE_CRC32(Current->BitCache, Current->FrameCRC);
 			Current->BitCount = 8;
 		}
@@ -591,7 +593,7 @@ int decode_to_pcmbuffer(BYTE *output, TTAinfo *tta_info, TTAcodec *Current, TTA_
 
 		if (k) {
 			while (Current->BitCount < k) {
-				tmp = reader_read_byte(Reader, tta_info);
+				tmp = reader_read_byte(Reader, tta_info, Current);
 				UPDATE_CRC32(tmp, Current->FrameCRC);
 				Current->BitCache |= tmp << Current->BitCount;
 				Current->BitCount += 8;
@@ -973,6 +975,11 @@ static void do_vis(unsigned char *data, int count, int bps, long double position
 static DWORD WINAPI DecoderThread(void *p) {
 	int done = 0;
 	int len;
+	unsigned int len_total = 0;
+	int bitrate = player.info.BitRate;
+	const int convert_to_bitrate = player.info.SampleRate / 1024;
+
+	player.Current.read_bytes = 0;
 
 	while (!killDecoderThread) {
 		if (seek_needed != -1) {
@@ -1008,6 +1015,20 @@ static DWORD WINAPI DecoderThread(void *p) {
 					len = mod.dsp_dosamples((short *)pcm_buffer, len, player.info.Bps,
 						player.info.Nch, player.info.SampleRate);
 				mod.outMod->Write((char *)pcm_buffer, len * player.info.Nch * (player.info.Bps >> 3));
+
+				// Calculate current bitrate
+				len_total += len;
+				if (len_total > player.info.SampleRate)
+				{
+					bitrate = (player.Current.read_bytes << 3) / len_total * convert_to_bitrate;
+					player.Current.read_bytes = 0;
+					len_total = 0;
+					show_bitrate(bitrate);
+				}
+				else
+				{
+					// Do nothing
+				}
 			}
 		}
 		else

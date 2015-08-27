@@ -89,6 +89,7 @@ typedef struct {
 	unsigned int FrameNum;	// currently playing frame index
 	unsigned int FramePos;	// the playing position in frame
 	unsigned int *SeekTable;	// the playing position table
+	unsigned __int32 read_bytes;  // read bytes
 } TTAcodec;
 
 typedef struct {
