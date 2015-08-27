@@ -382,7 +382,7 @@ int TTA_AlbumArtProvider::SetAlbumArtData(const wchar_t *filename, const wchar_t
 
 int TTA_AlbumArtProvider::DeleteAlbumArt(const wchar_t *filename, const wchar_t *type)
 {
-	return SetAlbumArtData(filename, type, NULL, 0, L"image/jpeg");
+	return SetAlbumArtData(filename, type, NULL, 0, L"jpeg");
 }
 
 #define CBCLASS TTA_AlbumArtProvider
