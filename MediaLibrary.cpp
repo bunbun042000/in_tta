@@ -316,8 +316,8 @@ int CMediaLibrary::SetExtendedFileInfo(const wchar_t *fn, const wchar_t *Metadat
 
 	if (std::wstring(fn) != FileName)
 	{
+		FindTag = GetTagInfo(fn);
 		FileName = std::wstring(fn);
-		FindTag = GetTagInfo(FileName);
 	}
 	else
 	{
