@@ -1010,7 +1010,11 @@ static DWORD WINAPI DecoderThread(void *p) {
 				mod.outMod->Write((char *)pcm_buffer, len * player.info.Nch * (player.info.Bps >> 3));
 			}
 		}
-		else Sleep(20);
+		else
+		{
+			Sleep(20);
+		}
+
 	}
 
 	return 0;
