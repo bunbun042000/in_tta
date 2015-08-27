@@ -999,8 +999,8 @@ static DWORD WINAPI DecoderThread(void *p) {
 			else Sleep(10);
 		}
 		else if (mod.outMod->CanWrite() >=
-			((576 * player.info.Nch * player.info.BSize) << (mod.dsp_isactive() ? 1 : 0))) {
-			if (!(len = decode_to_pcmbuffer(pcm_buffer, &player.info, &player.Current, &player.Reader, 576))) done = 1;
+			((PLAYING_BUFFER_LENGTH * player.info.Nch * player.info.BSize) << (mod.dsp_isactive() ? 1 : 0))) {
+			if (!(len = decode_to_pcmbuffer(pcm_buffer, &player.info, &player.Current, &player.Reader, PLAYING_BUFFER_LENGTH))) done = 1;
 			else {
 				decode_pos_ms += (len * 1000) / player.info.SampleRate;
 				do_vis(pcm_buffer, len, player.info.Bps, decode_pos_ms);
