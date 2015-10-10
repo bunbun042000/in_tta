@@ -36,7 +36,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <windows.h>
 
 #include "AlbumArt.h"
-//#include "DecodeFile.h"
 #include "MediaLibrary.h"
 #include "in_tta.h"
 
@@ -91,8 +90,6 @@ void setpan(int pan);
 void eq_set(int on, char data[10], int preamp);
 
 static void skip_id3v2_tag(TTAinfo *TTAInfo);
-
-//void SetPlayingTitle(const char *filename, char *title);
 
 In_Module mod = {
 	IN_VER,
@@ -492,9 +489,6 @@ int decoder_new(HANDLE *heap, TTAinfo *tta_info, TTAcodec *Current, TTA_reader *
 	unsigned int i;
 	DWORD result;
 
-	// check for buffers is free
-//	if (Current->SeekTable) stop();
-
 	Current->FrameLenD = (int)(FRAME_TIME * tta_info->SampleRate);
 	Current->FrameLenL = tta_info->DataLength % Current->FrameLenD;
 	if (!Current->FrameLenL) Current->FrameLenL = Current->FrameLenD;
@@ -675,7 +669,6 @@ int decode_to_pcmbuffer(BYTE *output, TTAinfo *tta_info, TTAcodec *Current, TTA_
 }
 
 static int get_info_data(TTAinfo *fInfo, wchar_t *title) {
-//	wchar_t temp[MAX_PATH];
 
 	_wsplitpath_s(fInfo->FName, NULL, 0, NULL, 0, title, MAX_PATH, NULL, 0);
 
