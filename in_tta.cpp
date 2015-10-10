@@ -60,7 +60,6 @@ static const __int32 TRANSCODING_BUFFER_SIZE = TRANSCODING_BUFFER_LENGTH * MAX_D
 
 static int paused = 0;
 static int seek_needed = -1;
-static unsigned int decode_pos_ms = 0;
 
 static BYTE pcm_buffer[PLAYING_BUFFER_SIZE];	// PCM buffer
 static short vis_buffer[PLAYING_BUFFER_SIZE*MAX_NCH];	// vis buffer
@@ -865,7 +864,7 @@ int play(const wchar_t *filename)
 	}
 
 	paused = 0;
-	decode_pos_ms = 0;
+	player.decode_pos_ms = 0;
 	seek_needed = -1;
 	mod.is_seekable = player.info.Seekable;
 
@@ -960,7 +959,7 @@ void stop()
 
 }
 int  getlength() { return player.info.Length; }
-int  getoutputtime() { return decode_pos_ms + (mod.outMod->GetOutputTime() - mod.outMod->GetWrittenTime()); }
+int  getoutputtime() { return player.decode_pos_ms + (mod.outMod->GetOutputTime() - mod.outMod->GetWrittenTime()); }
 void setoutputtime(int time_in_ms) { seek_needed = time_in_ms; }
 void setvolume(int volume) { mod.outMod->SetVolume(volume); }
 void setpan(int pan) { mod.outMod->SetPan(pan); }
@@ -984,15 +983,15 @@ static DWORD WINAPI DecoderThread(void *p) {
 	while (!killDecoderThread) {
 		if (seek_needed != -1) {
 			if (seek_needed >= player.info.Length) {
-				decode_pos_ms = player.info.Length;
-				mod.outMod->Flush(decode_pos_ms);
+				player.decode_pos_ms = player.info.Length;
+				mod.outMod->Flush(player.decode_pos_ms);
 				done = 1;
 			}
 			else {
 				player.Current.FrameNum = seek_needed / SEEK_STEP;
-				decode_pos_ms = player.Current.FrameNum * SEEK_STEP;
+				player.decode_pos_ms = player.Current.FrameNum * SEEK_STEP;
 				seek_needed = -1;
-				mod.outMod->Flush(decode_pos_ms);
+				mod.outMod->Flush(player.decode_pos_ms);
 				player.Current.FramePos = -1;
 			}
 			if (set_position(true, &player.Reader, &player.Current, &player.info)) return 0;
@@ -1009,8 +1008,8 @@ static DWORD WINAPI DecoderThread(void *p) {
 			((PLAYING_BUFFER_LENGTH * player.info.Nch * player.info.BSize) << (mod.dsp_isactive() ? 1 : 0))) {
 			if (!(len = decode_to_pcmbuffer(pcm_buffer, &player.info, &player.Current, &player.Reader, PLAYING_BUFFER_LENGTH))) done = 1;
 			else {
-				decode_pos_ms += (len * 1000) / player.info.SampleRate;
-				do_vis(pcm_buffer, len, player.info.Bps, decode_pos_ms);
+				player.decode_pos_ms += (len * 1000) / player.info.SampleRate;
+				do_vis(pcm_buffer, len, player.info.Bps, player.decode_pos_ms);
 				if (mod.dsp_isactive())
 					len = mod.dsp_dosamples((short *)pcm_buffer, len, player.info.Bps,
 						player.info.Nch, player.info.SampleRate);
@@ -1109,7 +1108,7 @@ extern "C"
 		}
 
 		paused = 0;
-		decode_pos_ms = 0;
+		transcoder.decode_pos_ms = 0;
 		seek_needed = -1;
 		mod.is_seekable = transcoder.info.Seekable;
 
@@ -1243,7 +1242,7 @@ extern "C"
 		if (NULL != trans && trans->info.hFile != INVALID_HANDLE_VALUE)
 		{
 			trans->Current.FrameNum = millisecs / SEEK_STEP;
-			decode_pos_ms = player.Current.FrameNum * SEEK_STEP;
+			trans->decode_pos_ms = player.Current.FrameNum * SEEK_STEP;
 			trans->Current.FramePos = -1;
 			set_position(true, &trans->Reader, &trans->Current, &trans->info);
 		} 

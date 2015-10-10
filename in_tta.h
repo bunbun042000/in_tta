@@ -128,5 +128,6 @@ typedef struct {
 	TTAinfo		info;			// currently playing file info
 	TTA_reader	Reader;
 	TTAcodec	Current;
+	unsigned int decode_pos_ms;
 } decoder_TTA;
 
