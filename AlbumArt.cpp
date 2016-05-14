@@ -373,7 +373,7 @@ END_DISPATCH;
 static TTA_AlbumArtProvider albumArtProvider;
 
 // {bb653840-6dab-4867-9f42-A772E4068C81}
-static const GUID TTA_albumartproviderGUID = 
+static const GUID TTA_albumArtproviderGUID = 
 { 0xbb653840, 0x6dab, 0x4867, { 0x9f, 0x42, 0xa7, 0x72, 0xe4, 0x05, 0x8c, 0x81 } };
 
 
@@ -389,7 +389,7 @@ const char *AlbumArtFactory::GetServiceName()
 
 GUID AlbumArtFactory::GetGUID()
 {
-	return TTA_albumartproviderGUID;
+	return TTA_albumArtproviderGUID;
 }
 
 void *AlbumArtFactory::GetInterface(int global_lock)
@@ -399,7 +399,7 @@ void *AlbumArtFactory::GetInterface(int global_lock)
 
 int AlbumArtFactory::SupportNonLockingInterface()
 {
-	return 0;
+	return 1;
 }
 
 int AlbumArtFactory::ReleaseInterface(void *ifc)
