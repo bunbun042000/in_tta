@@ -31,7 +31,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 static const __int32 MAX_MUSICTEXT = 512;
 static const __int32 MAX_YEAR = 10;
 
-
 struct TagInfo
 {
 	unsigned long	Length;
@@ -48,6 +47,7 @@ struct TagInfo
 	std::wstring	Publisher;
 	std::wstring	Disc;
 	std::wstring	BPM;
+	std::wstring    bitrate;
 };
 
 class CMediaLibrary  

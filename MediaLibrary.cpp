@@ -126,6 +126,8 @@ bool CMediaLibrary::GetTagInfo(const std::wstring fn)
 			<< L")\nLength\t\t: " << second.str();
 		TagDataW.Format = ttainfo_temp.str();
 
+		TagDataW.bitrate = std::to_wstring(TTAFile.audioProperties()->bitsPerSample());
+
 		std::wstring temp;
 		if (NULL != TTAFile.ID3v2Tag()) 
 		{
@@ -272,7 +274,21 @@ int CMediaLibrary::GetExtendedFileInfo(const wchar_t *fn, const wchar_t *Metadat
 			wcsncpy_s(dest, destlen, TagDataW.Track.c_str(), _TRUNCATE);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "composer") == 0) {
+		else if (_stricmp(MetaData, "tracks") == 0) 
+		{
+			size_t slash_pos = TagDataW.Track.find_first_of(L'/');
+			if (slash_pos != std::wstring::npos)
+			{
+				wcsncpy_s(dest, destlen, TagDataW.Track.substr(slash_pos + 1).c_str(), _TRUNCATE);
+			}
+			else
+			{
+				// Do nothing
+			}
+			RetCode = 1;
+		}
+		else if (_stricmp(MetaData, "composer") == 0) 
+		{
 			wcsncpy_s(dest, destlen, TagDataW.Composer.c_str(), _TRUNCATE);
 			RetCode = 1;
 		}
@@ -284,11 +300,31 @@ int CMediaLibrary::GetExtendedFileInfo(const wchar_t *fn, const wchar_t *Metadat
 			wcsncpy_s(dest, destlen, TagDataW.Disc.c_str(), _TRUNCATE);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "bpm") == 0) {
+		else if (_stricmp(MetaData, "discs") == 0) 
+		{
+			size_t slash_pos = TagDataW.Disc.find_first_of(L'/');
+			if (slash_pos != std::wstring::npos)
+			{
+				wcsncpy_s(dest, destlen, TagDataW.Disc.substr(slash_pos + 1).c_str(), _TRUNCATE);
+			}
+			else
+			{
+				// Do nothing
+			}
+			RetCode = 1;
+		}
+		else if (_stricmp(MetaData, "bpm") == 0) 
+		{
 			wcsncpy_s(dest, destlen, TagDataW.BPM.c_str(), _TRUNCATE);
 			RetCode = 1;
 		}
-		else {
+		else if (_stricmp(MetaData, "bitrate") == 0)
+		{
+			wcsncpy_s(dest, destlen, TagDataW.bitrate.c_str(), _TRUNCATE);
+			RetCode = 1;
+		}
+		else
+		{
 			RetCode = 0;
 		}
 
