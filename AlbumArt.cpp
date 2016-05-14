@@ -288,9 +288,12 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 			} else {
 				// do nothing
 			}
-			if (NULL != *mime_type) {
-				Wasabi_Free(*bits);
-			} else {
+			if (NULL != *mime_type)
+			{
+				Wasabi_Free(*mime_type);
+			} 
+			else
+			{
 				// do nothing
 			}
 		}
