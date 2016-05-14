@@ -1235,7 +1235,7 @@ extern "C"
 		if (NULL != trans && trans->info.hFile != INVALID_HANDLE_VALUE)
 		{
 			trans->Current.FrameNum = millisecs / SEEK_STEP;
-			trans->decode_pos_ms = player.Current.FrameNum * SEEK_STEP;
+			trans->decode_pos_ms = trans->Current.FrameNum * SEEK_STEP;
 			trans->Current.FramePos = -1;
 			set_position(true, &trans->Reader, &trans->Current, &trans->info);
 		} 
