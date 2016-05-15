@@ -823,12 +823,12 @@ void getfileinfo(const wchar_t *file, wchar_t *title, int *length_in_ms)
 	}
 }
 
-int infodlg(const in_char *filename, HWND parent)
+int infodlg(const wchar_t *filename, HWND parent)
 {
 	return 0;
 }
 
-int isourfile(const in_char *filename)
+int isourfile(const wchar_t *filename)
 {
 	return 0;
 } 
