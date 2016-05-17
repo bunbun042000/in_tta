@@ -313,7 +313,7 @@ static int read_fileinfo(TTAinfo *TTAInfo) {
 static int open_TTA_file(const wchar_t *filename, TTAinfo *TTA_Info) {
 	ZeroMemory(TTA_Info, sizeof(TTAinfo));
 
-	lstrcpyn(TTA_Info->FName, filename, MAX_PATH - 1);
+	lstrcpyn(TTA_Info->FName, filename, MAX_PATHLEN - 1);
 	TTA_Info->hFile = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
 		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (TTA_Info->hFile == INVALID_HANDLE_VALUE) {
@@ -670,7 +670,7 @@ int decode_to_pcmbuffer(BYTE *output, TTAinfo *tta_info, TTAcodec *Current, TTA_
 
 static int get_info_data(TTAinfo *fInfo, wchar_t *title) {
 
-	_wsplitpath_s(fInfo->FName, NULL, 0, NULL, 0, title, MAX_PATH, NULL, 0);
+	_wsplitpath_s(fInfo->FName, NULL, 0, NULL, 0, title, MAX_PATHLEN, NULL, 0);
 
 	return (fInfo->Length);
 }

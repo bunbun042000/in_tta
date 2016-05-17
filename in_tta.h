@@ -31,6 +31,8 @@ static const __int32 MAX_BPS = (MAX_DEPTH * 8);
 static const __int32 MIN_BPS = 16;
 static const __int32 MAX_NCH = 6;
 
+static const __int32 MAX_PATHLEN = 1024;
+
 typedef enum {
 	TTA_SUCCESS,	// setjmp data saved
 	TTA_NO_ERROR,	// no known errors found
@@ -99,7 +101,7 @@ typedef struct {
 } TTA_reader;
 
 typedef struct {
-	wchar_t			FName[MAX_PATH];
+	wchar_t			FName[MAX_PATHLEN];
 	HANDLE			hFile;		// file handle
 	unsigned short	Nch;		// number of channels
 	unsigned short	Bps;		// bits per sample
