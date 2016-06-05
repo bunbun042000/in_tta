@@ -275,12 +275,12 @@ void getfileinfo(const wchar_t *file, wchar_t *title, int *length_in_ms)
 	}
 }
 
-int infodlg(const in_char *filename, HWND parent)
+int infodlg(const wchar_t *filename, HWND parent)
 {
 	return 0;
 }
 
-int isourfile(const in_char *filename)
+int isourfile(const wchar_t *filename)
 {
 	return 0;
 } 
@@ -502,7 +502,7 @@ DWORD WINAPI __stdcall DecoderThread (void *p)
 			}
 			else
 			{
-				::Sleep(1);
+				::Sleep(10);
 			}
 		} 
 		else if (mod.outMod->CanWrite() >= 
@@ -545,7 +545,7 @@ DWORD WINAPI __stdcall DecoderThread (void *p)
 		} 
 		else
 		{
-			::Sleep(1);
+			::Sleep(20);
 		}
 	}
 
