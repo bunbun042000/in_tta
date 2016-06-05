@@ -126,6 +126,8 @@ bool CMediaLibrary::GetTagInfo(const std::wstring fn)
 			<< L")\nLength\t\t: " << second.str();
 		TagDataW.Format = ttainfo_temp.str();
 
+		TagDataW.bitrate = std::to_wstring(TTAFile.audioProperties()->bitsPerSample());
+
 		std::wstring temp;
 		if (NULL != TTAFile.ID3v2Tag()) 
 		{
@@ -153,10 +155,6 @@ bool CMediaLibrary::GetTagInfo(const std::wstring fn)
 			TagDataW.Disc = temp;
 			temp = TTAFile.ID3v2Tag()->BPM().toCWString();
 			TagDataW.BPM = temp;
-			TagLib::String mtype;
-			albumArtInfo.Albumart = TTAFile.ID3v2Tag()->albumArt(TagLib::ID3v2::AttachedPictureFrame::FrontCover, mtype);
-			albumArtInfo.arttype = TagLib::ID3v2::AttachedPictureFrame::FrontCover;
-			albumArtInfo.mimetype = mtype;
 
 		}
 		else if (NULL != TTAFile.ID3v1Tag()) 
@@ -221,78 +219,127 @@ int CMediaLibrary::GetExtendedFileInfo(const wchar_t *fn, const wchar_t *Metadat
 		wchar_t	Buff[MAX_MUSICTEXT];
 		const char *MetaData = reinterpret_cast<const char*>(Metadata);
 
-		if (_stricmp(MetaData, "length") == 0) {
+		if (_stricmp(MetaData, "length") == 0) 
+		{
 			_ultow_s(TagDataW.Length, dest, destlen, 10);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "formatinformation") == 0) {
+		else if (_stricmp(MetaData, "formatinformation") == 0) 
+		{
 			wcsncpy_s(dest, destlen, TagDataW.Format.c_str(), _TRUNCATE);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "type") == 0) {
+		else if (_stricmp(MetaData, "type") == 0) 
+		{
 			Buff[0] = '0';
 			Buff[1] = 0;
 			wcsncpy_s(dest, destlen, Buff, _TRUNCATE);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "family") == 0) {
+		else if (_stricmp(MetaData, "family") == 0) 
+		{
 			wcsncpy_s(dest, destlen, L"The True Audio File", _TRUNCATE);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "lossless") == 0) {
+		else if (_stricmp(MetaData, "lossless") == 0) 
+		{
 			Buff[0] = '1';
 			wcsncpy_s(dest, destlen, Buff, _TRUNCATE);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "title") == 0) {
+		else if (_stricmp(MetaData, "title") == 0) 
+		{
 			wcsncpy_s(dest, destlen, TagDataW.Title.c_str(), _TRUNCATE);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "artist") == 0) {
+		else if (_stricmp(MetaData, "artist") == 0) 
+		{
 			wcsncpy_s(dest, destlen, TagDataW.Artist.c_str(), _TRUNCATE);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "albumartist") == 0) {
+		else if (_stricmp(MetaData, "albumartist") == 0) 
+		{
 			wcsncpy_s(dest, destlen, TagDataW.AlbumArtist.c_str(), _TRUNCATE);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "comment") == 0) {
+		else if (_stricmp(MetaData, "comment") == 0) 
+		{
 			wcsncpy_s(dest, destlen, TagDataW.Comment.c_str(), _TRUNCATE);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "album") == 0) {
+		else if (_stricmp(MetaData, "album") == 0) 
+		{
 			wcsncpy_s(dest, destlen, TagDataW.Album.c_str(), _TRUNCATE);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "year") == 0) {
+		else if (_stricmp(MetaData, "year") == 0) 
+		{
 			wcsncpy_s(dest, destlen, TagDataW.Year.c_str(), _TRUNCATE);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "genre") == 0) {
+		else if (_stricmp(MetaData, "genre") == 0) 
+		{
 			wcsncpy_s(dest, destlen, TagDataW.Genre.c_str(), _TRUNCATE);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "track") == 0) {
+		else if (_stricmp(MetaData, "track") == 0) 
+		{
 			wcsncpy_s(dest, destlen, TagDataW.Track.c_str(), _TRUNCATE);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "composer") == 0) {
+		else if (_stricmp(MetaData, "tracks") == 0) 
+		{
+			size_t slash_pos = TagDataW.Track.find_first_of(L'/');
+			if (slash_pos != std::wstring::npos)
+			{
+				wcsncpy_s(dest, destlen, TagDataW.Track.substr(slash_pos + 1).c_str(), _TRUNCATE);
+			}
+			else
+			{
+				// Do nothing
+			}
+			RetCode = 1;
+		}
+		else if (_stricmp(MetaData, "composer") == 0) 
+		{
 			wcsncpy_s(dest, destlen, TagDataW.Composer.c_str(), _TRUNCATE);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "publisher") == 0) {
+		else if (_stricmp(MetaData, "publisher") == 0) 
+		{
 			wcsncpy_s(dest, destlen, TagDataW.Publisher.c_str(), _TRUNCATE);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "disc") == 0) {
+		else if (_stricmp(MetaData, "disc") == 0) 
+		{
 			wcsncpy_s(dest, destlen, TagDataW.Disc.c_str(), _TRUNCATE);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "bpm") == 0) {
+		else if (_stricmp(MetaData, "discs") == 0) 
+		{
+			size_t slash_pos = TagDataW.Disc.find_first_of(L'/');
+			if (slash_pos != std::wstring::npos)
+			{
+				wcsncpy_s(dest, destlen, TagDataW.Disc.substr(slash_pos + 1).c_str(), _TRUNCATE);
+			}
+			else
+			{
+				// Do nothing
+			}
+			RetCode = 1;
+		}
+		else if (_stricmp(MetaData, "bpm") == 0) 
+		{
 			wcsncpy_s(dest, destlen, TagDataW.BPM.c_str(), _TRUNCATE);
 			RetCode = 1;
 		}
-		else {
+		else if (_stricmp(MetaData, "bitrate") == 0)
+		{
+			wcsncpy_s(dest, destlen, TagDataW.bitrate.c_str(), _TRUNCATE);
+			RetCode = 1;
+		}
+		else
+		{
 			RetCode = 0;
 		}
 
@@ -324,63 +371,78 @@ int CMediaLibrary::SetExtendedFileInfo(const wchar_t *fn, const wchar_t *Metadat
 		FindTag = true;
 	}
 
-	if (FindTag) {
+	if (FindTag) 
+	{
 		const char *MetaData = reinterpret_cast<const char*>(Metadata);
 
-		if (_stricmp(MetaData, "title") == 0) {
+		if (_stricmp(MetaData, "title") == 0) 
+		{
 			TagDataW.Title = val;
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "artist") == 0) {
+		else if (_stricmp(MetaData, "artist") == 0) 
+		{
 			TagDataW.Artist = val;
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "albumartist") == 0) {
+		else if (_stricmp(MetaData, "albumartist") == 0) 
+		{
 			TagDataW.AlbumArtist = val;
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "comment") == 0) {
+		else if (_stricmp(MetaData, "comment") == 0) 
+		{
 			TagDataW.Comment = val;
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "album") == 0) {
+		else if (_stricmp(MetaData, "album") == 0) 
+		{
 			TagDataW.Album = val;
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "year") == 0) {
+		else if (_stricmp(MetaData, "year") == 0) 
+		{
 			TagDataW.Year = val;
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "genre") == 0) {
+		else if (_stricmp(MetaData, "genre") == 0) 
+		{
 			TagDataW.Genre = val;
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "track") == 0) {
+		else if (_stricmp(MetaData, "track") == 0) 
+		{
 			TagDataW.Track = val;
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "composer") == 0) {
+		else if (_stricmp(MetaData, "composer") == 0) 
+		{
 			TagDataW.Composer = val;
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "publisher") == 0) {
+		else if (_stricmp(MetaData, "publisher") == 0) 
+		{
 			TagDataW.Publisher = val;
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "disc") == 0) {
+		else if (_stricmp(MetaData, "disc") == 0) 
+		{
 			TagDataW.Disc = val;
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "bpm") == 0) {
+		else if (_stricmp(MetaData, "bpm") == 0) 
+		{
 			TagDataW.BPM = val;
 			RetCode = 1;
 		}
-		else {
+		else
+		{
 			RetCode = 0;
 		}
 
 	}
-	else {
+	else 
+	{
 		RetCode = 0;
 	}
 
@@ -402,15 +464,18 @@ int CMediaLibrary::WriteExtendedFileInfo()
 	{
 		TagLib::TrueAudio::File TTAFile(FileName.c_str());
 		
-		if (!TTAFile.isValid()) {
+		if (!TTAFile.isValid()) 
+		{
 			::LeaveCriticalSection(&CriticalSection);
 			return 0;
 		}
-		else {
+		else
+		{
 			// do nothing
 		}
 
-		if (NULL != TTAFile.ID3v2Tag(true)) {
+		if (NULL != TTAFile.ID3v2Tag(true))
+		{
 			TagLib::String temp;
 			temp = TagLib::String(TagDataW.Title);
 			TTAFile.ID3v2Tag()->setTitle(temp);
@@ -436,10 +501,10 @@ int CMediaLibrary::WriteExtendedFileInfo()
 			TTAFile.ID3v2Tag()->setDisc(temp);
 			temp = TagLib::String(TagDataW.BPM);
 			TTAFile.ID3v2Tag()->setBPM(temp);
-			TTAFile.ID3v2Tag()->setAlbumArt(albumArtInfo.Albumart, albumArtInfo.arttype, albumArtInfo.mimetype);
 
 		}
-		else if (NULL != TTAFile.ID3v1Tag(true)) {
+		else if (NULL != TTAFile.ID3v1Tag(true)) 
+		{
 			TTAFile.ID3v1Tag()->setTitle(TagDataW.Title);
 			TTAFile.ID3v1Tag()->setArtist(TagDataW.Artist);
 			TTAFile.ID3v1Tag()->setAlbum(TagDataW.Album);
@@ -459,25 +524,4 @@ int CMediaLibrary::WriteExtendedFileInfo()
 	::LeaveCriticalSection(&CriticalSection);
 
 	return 1;
-}
-
-TagLib::ByteVector CMediaLibrary::GetAlbumArt(TagLib::ID3v2::AttachedPictureFrame::Type arttype, TagLib::String &mimetype)
-{
-	if (arttype == albumArtInfo.arttype)
-	{
-		mimetype = albumArtInfo.mimetype;
-		return albumArtInfo.Albumart;
-	}
-	else
-	{
-		// Do nothing
-	}
-	return TagLib::ByteVector::null;
-}
-
-void CMediaLibrary::SetAlbumArt(const TagLib::ByteVector &v, TagLib::ID3v2::AttachedPictureFrame::Type arttype, TagLib::String &mimetype)
-{
-	albumArtInfo.Albumart = v;
-	albumArtInfo.arttype = arttype;
-	albumArtInfo.mimetype = mimetype;
 }

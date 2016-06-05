@@ -1,6 +1,6 @@
 /*
 The ttaplugin-winamp project.
-Copyright (C) 2005-2013 Yamagata Fumihiro
+Copyright (C) 2005-2016 Yamagata Fumihiro
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -52,8 +52,6 @@ protected:
 };
 
 extern In_Module mod; // TODO: change if you called yours something else
-extern CMediaLibrary m_ReadTag;
-extern CMediaLibrary m_WriteTag;
 
 #define WASABI_API_MEMMGR memmgr
 
@@ -67,7 +65,8 @@ void Wasabi_Init()
 {
 	WASABI_API_SVC = (api_service *)SendMessage(mod.hMainWindow, WM_WA_IPC, 0, IPC_GET_API_SERVICE);
 
-	if (WASABI_API_SVC == 0 || WASABI_API_SVC == (api_service *) 1) {
+	if (WASABI_API_SVC == 0 || WASABI_API_SVC == (api_service *) 1)
+	{
 		WASABI_API_SVC = 0;
 		return;
 	}
@@ -75,22 +74,51 @@ void Wasabi_Init()
 	WASABI_API_SVC->service_register(&albumArtFactory);
 
 	waServiceFactory *sf = (waServiceFactory *)WASABI_API_SVC->service_getServiceByGuid(AgaveConfigGUID);
-	if (sf)	
-		AGAVE_API_CONFIG= (api_config *)sf->getInterface();
+
+	if (sf)
+	{
+		AGAVE_API_CONFIG = (api_config *)sf->getInterface();
+	}
+	else
+	{
+		// Do nothing
+	}
+
 	sf = (waServiceFactory *)WASABI_API_SVC->service_getServiceByGuid(memMgrApiServiceGuid);
-	if (sf)	
-		WASABI_API_MEMMGR= (api_memmgr *)sf->getInterface();
+
+	if (sf)
+	{
+		WASABI_API_MEMMGR = (api_memmgr *)sf->getInterface();
+	}
+	else
+	{
+		// Do nothing
+	}
 }
 
 void Wasabi_Quit()
 {
-	if (WASABI_API_SVC) {
+	if (WASABI_API_SVC)
+	{
 		waServiceFactory *sf = (waServiceFactory *)WASABI_API_SVC->service_getServiceByGuid(AgaveConfigGUID);
-		if (sf)	
+		if (sf)
+		{
 			sf->releaseInterface(AGAVE_API_CONFIG);
+		}
+		else
+		{
+			// Do nothing
+		}
+
 		sf = (waServiceFactory *)WASABI_API_SVC->service_getServiceByGuid(memMgrApiServiceGuid);
-		if (sf)	
+		if (sf)
+		{
 			sf->releaseInterface(WASABI_API_MEMMGR);
+		}
+		else
+		{
+			// Do nothing
+		}
 
 		WASABI_API_SVC->service_deregister(&albumArtFactory);
 	}
@@ -141,7 +169,13 @@ TTA_AlbumArtProvider::~TTA_AlbumArtProvider()
 static const wchar_t *GetLastCharactercW(const wchar_t *string)
 {
 	if (!string || !*string)
+	{
 		return string;
+	}
+	else
+	{
+		// Do nothing
+	}
 
 	return CharPrevW(string, string+lstrlenW(string));
 }
@@ -149,19 +183,52 @@ static const wchar_t *GetLastCharactercW(const wchar_t *string)
 static const wchar_t *scanstr_backW(const wchar_t *str, const wchar_t *toscan, const wchar_t *defval)
 {
 	const wchar_t *s = GetLastCharactercW(str);
-	if (!str[0]) return defval;
-	if (!toscan || !toscan[0]) return defval; 
+
+	if (!str[0])
+	{
+		return defval;
+	}
+	else
+	{
+		// Do nothing
+	}
+
+	if (!toscan || !toscan[0])
+	{
+		return defval;
+	}
+	else
+	{
+		// Do nothing
+	}
+
 	while (1)
 	{
 		const wchar_t *t = toscan;
+
 		while (*t)
 		{
-			if (*t == *s) return s;
+			if (*t == *s)
+			{
+				return s;
+			}
+			else
+			{
+				// Do nothing
+			}
 			t = CharNextW(t);
 		}
+
 		t = CharPrevW(str, s);
+
 		if (t == s)
+		{
 			return defval;
+		}
+		else
+		{
+			// Do nothing
+		}
 		s = t;
 	}
 }
@@ -170,10 +237,22 @@ static const wchar_t *extensionW(const wchar_t *fn)
 {
 	const wchar_t *end = scanstr_backW(fn, L"./\\", 0);
 	if (!end)
-		return (fn+lstrlenW(fn));
+	{
+		return (fn + lstrlenW(fn));
+	}
+	else
+	{
+		// Do nothing
+	}
 
 	if (*end == L'.')
-		return end+1;
+	{
+		return end + 1;
+	}
+	else
+	{
+		// Do nothing
+	}
 
 	return (fn+lstrlenW(fn));
 }
@@ -183,7 +262,7 @@ bool TTA_AlbumArtProvider::IsMine(const wchar_t *filename)
 	const wchar_t *extension = extensionW(filename);
 	if (extension && *extension)
 	{
-		return (_wcsicmp (extension, L"tta") == 0) ? true : false;
+		return (_wcsicmp (extension, L"tta") == 0) | (_wcsicmp(extension, L"TTA") == 0) ? true : false;
 	}
 	else
 	{
@@ -207,119 +286,120 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 
 	::EnterCriticalSection(&CriticalSection);
 
-	if(_wcsicmp (type, L"cover")) {
+	if(_wcsicmp (type, L"cover"))
+	{
 		::LeaveCriticalSection(&CriticalSection);
         return retval;
-	} else {
+	} 
+	else 
+	{
 		// do nothing
 	}
 
-	if(!bits || !len || !mime_type) {
+	if(!bits || !len || !mime_type) 
+	{
 		::LeaveCriticalSection(&CriticalSection);
 		return retval;
-	} else {
+	}
+	else
+	{
 		// do nothing
 	}
 
 	if (!isSucceed || _wcsicmp(FileName.c_str(), filename))
 	{
-		if (m_ReadTag.isValid() && m_ReadTag.GetCurrentFileName() == filename)
-		{
-			FileName = filename;
-			// read Album Art
-			AlbumArt =
-				m_ReadTag.GetAlbumArt(TagLib::ID3v2::AttachedPictureFrame::FrontCover, mimeType);
-			extension = mimeType.substr(mimeType.find("/") + 1);
-			isSucceed = true;
-		}
-		else if (m_WriteTag.isValid() && m_WriteTag.GetCurrentFileName() == filename)
-		{
-			FileName = filename;
-			// read Album Art
-			AlbumArt =
-				m_WriteTag.GetAlbumArt(TagLib::ID3v2::AttachedPictureFrame::FrontCover, mimeType);
-			extension = mimeType.substr(mimeType.find("/") + 1);
-			isSucceed = true;
+		FileName = filename;
 
+		TagLib::TrueAudio::File TagFile(FileName.c_str());
+
+		if (!TagFile.isValid())
+		{
+			isSucceed = false;
+			::LeaveCriticalSection(&CriticalSection);
+			return retval;
 		}
 		else
 		{
-			FileName = filename;
-
-			TagLib::TrueAudio::File TagFile(FileName.c_str());
-
-			if (!TagFile.isValid())
-			{
-				isSucceed = false;
-				::LeaveCriticalSection(&CriticalSection);
-				return retval;
-			}
-			else {
-				isSucceed = true;
-			}
-
-			// read Album Art
-			AlbumArt =
-				TagFile.ID3v2Tag()->albumArt(TagLib::ID3v2::AttachedPictureFrame::FrontCover, mimeType);
-
-			extension = mimeType.substr(mimeType.find("/") + 1);
+			isSucceed = true;
 		}
 
+		// read Album Art
+		AlbumArt =
+			TagFile.ID3v2Tag()->albumArt(TagLib::ID3v2::AttachedPictureFrame::FrontCover, mimeType);
+			extension = mimeType.substr(mimeType.find("/") + 1);
 	}
 	else
 	{
 		// Do nothing
 	}
 
-	if (AlbumArt != TagLib::ByteVector::null) {
+	if (AlbumArt != TagLib::ByteVector::null)
+	{
 		*len = AlbumArt.size();
 		*bits = (char *)Wasabi_Malloc(*len);
-		if (NULL == *bits) {
+		if (NULL == *bits) 
+		{
 			::LeaveCriticalSection(&CriticalSection);
 			return retval;
 		}
-		else {
+		else 
+		{
 			// do nothing
 		}
 
 		errno_t err = memcpy_s(*bits, AlbumArt.size(), AlbumArt.data(), AlbumArt.size());
-		if (err) {
+		if (err) 
+		{
 			::LeaveCriticalSection(&CriticalSection);
 			return retval;
 		}
-		else {
+		else
+		{
 			// do nothing
 		}
 
 		*mime_type = (wchar_t *)Wasabi_Malloc(extension.size() * 2 + 2);
-		if (NULL == *mime_type) {
-			if (NULL != *bits) {
+		if (NULL == *mime_type) 
+		{
+			if (NULL != *bits) 
+			{
 				Wasabi_Free(*bits);
 			}
-			else {
+			else
+			{
 				// do nothing
 			}
 			::LeaveCriticalSection(&CriticalSection);
 			return retval;
 		}
-		else {
+		else
+		{
 			mbstowcs_s(&string_len, *mime_type, extension.size() + 1, extension.toCString(), _TRUNCATE);
 			retval = ALBUMARTPROVIDER_SUCCESS;
 		}
 
-		if (retval) {
-			if (NULL != *bits) {
+		if (retval)
+		{
+			if (NULL != *bits)
+			{
 				Wasabi_Free(*bits);
-			} else {
+			} 
+			else
+			{
 				// do nothing
 			}
-			if (NULL != *mime_type) {
-				Wasabi_Free(*bits);
-			} else {
+			if (NULL != *mime_type)
+			{
+				Wasabi_Free(*mime_type);
+			} 
+			else
+			{
 				// do nothing
 			}
 		}
-	} else {
+	} 
+	else
+	{
 		// do nothing
 	}
 
@@ -338,7 +418,8 @@ int TTA_AlbumArtProvider::SetAlbumArtData(const wchar_t *filename, const wchar_t
 
 	::EnterCriticalSection(&CriticalSection);
 
-	if(std::wstring(filename) == L"") {
+	if(std::wstring(filename) == L"")
+	{
 		::LeaveCriticalSection(&CriticalSection);
         return retval;
 	}
@@ -347,14 +428,19 @@ int TTA_AlbumArtProvider::SetAlbumArtData(const wchar_t *filename, const wchar_t
 
 	TagLib::ByteVector AlbumArt;
 
-	if (!bits) {
+	if (!bits)
+	{
 		//delete AlbumArt
 		AlbumArt.setData(NULL, 0);
 
-	} else if(len == 0 || wcscmp(mime_type, L"")==0) {
+	}
+	else if(len == 0 || wcscmp(mime_type, L"")==0)
+	{
 		::LeaveCriticalSection(&CriticalSection);
 		return retval;
-	} else {
+	}
+	else
+	{
 		mimeType = L"image/";
 		mimeType += mime_type;
 		size = len;
@@ -382,7 +468,7 @@ int TTA_AlbumArtProvider::SetAlbumArtData(const wchar_t *filename, const wchar_t
 
 int TTA_AlbumArtProvider::DeleteAlbumArt(const wchar_t *filename, const wchar_t *type)
 {
-	return SetAlbumArtData(filename, type, NULL, 0, L"image/jpeg");
+	return SetAlbumArtData(filename, type, NULL, 0, L"jpeg");
 }
 
 #define CBCLASS TTA_AlbumArtProvider
@@ -398,7 +484,7 @@ END_DISPATCH;
 static TTA_AlbumArtProvider albumArtProvider;
 
 // {bb653840-6dab-4867-9f42-A772E4068C81}
-static const GUID TTA_albumartproviderGUID = 
+static const GUID TTA_albumArtproviderGUID = 
 { 0xbb653840, 0x6dab, 0x4867, { 0x9f, 0x42, 0xa7, 0x72, 0xe4, 0x05, 0x8c, 0x81 } };
 
 
@@ -414,7 +500,7 @@ const char *AlbumArtFactory::GetServiceName()
 
 GUID AlbumArtFactory::GetGUID()
 {
-	return TTA_albumartproviderGUID;
+	return TTA_albumArtproviderGUID;
 }
 
 void *AlbumArtFactory::GetInterface(int global_lock)
@@ -424,7 +510,7 @@ void *AlbumArtFactory::GetInterface(int global_lock)
 
 int AlbumArtFactory::SupportNonLockingInterface()
 {
-	return 0;
+	return 1;
 }
 
 int AlbumArtFactory::ReleaseInterface(void *ifc)

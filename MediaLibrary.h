@@ -32,7 +32,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 static const __int32 MAX_MUSICTEXT = 512;
 static const __int32 MAX_YEAR = 10;
 
-
 struct TagInfo
 {
 	unsigned long	Length;
@@ -49,13 +48,7 @@ struct TagInfo
 	std::wstring	Publisher;
 	std::wstring	Disc;
 	std::wstring	BPM;
-};
-
-struct AlbumArtInfo
-{
-	TagLib::ByteVector	Albumart;
-	TagLib::ID3v2::AttachedPictureFrame::Type arttype;
-	TagLib::String mimetype;
+	std::wstring    bitrate;
 };
 
 class CMediaLibrary  
@@ -68,8 +61,6 @@ public:
 	__int32  WriteExtendedFileInfo();
 	std::wstring GetCurrentFileName() { return FileName; };
 	bool	isValid() { return isValidFile; };
-	TagLib::ByteVector	GetAlbumArt(TagLib::ID3v2::AttachedPictureFrame::Type arttype, TagLib::String &mimetype);
-	void				SetAlbumArt(const TagLib::ByteVector &v, TagLib::ID3v2::AttachedPictureFrame::Type arttype, TagLib::String &mimetype);
 
 private:
 
@@ -78,7 +69,6 @@ private:
 	DWORD				GetTagTime;
 	std::wstring		FileName;
 	bool				isValidFile;
-	AlbumArtInfo		albumArtInfo;
 
 	void FlushCache(void);
 	bool GetTagInfo(const std::wstring fn);
