@@ -158,12 +158,18 @@ TTA_AlbumArtProvider::TTA_AlbumArtProvider() : svc_albumArtProvider()
 {
 	::InitializeCriticalSection(&CriticalSection);
 	isSucceed = false;
+	FileName = L"";
+	AlbumArt = TagLib::ByteVector();
+	extension = TagLib::String();
 }
 
 TTA_AlbumArtProvider::~TTA_AlbumArtProvider()
 {
 	::DeleteCriticalSection(&CriticalSection);
 	isSucceed = false;
+	FileName = L"";
+	AlbumArt = TagLib::ByteVector();
+	extension = TagLib::String();
 }
 
 static const wchar_t *GetLastCharactercW(const wchar_t *string)
