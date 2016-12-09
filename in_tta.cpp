@@ -59,7 +59,6 @@ CMediaLibrary m_WriteTag;
 static const __int32 PLAYING_BUFFER_SIZE = PLAYING_BUFFER_LENGTH * MAX_DEPTH * MAX_NCH;
 static const __int32 TRANSCODING_BUFFER_SIZE = TRANSCODING_BUFFER_LENGTH * MAX_DEPTH * MAX_NCH;
 
-static long	vis_buffer[PLAYING_BUFFER_SIZE * MAX_NCH];	// vis buffer
 static BYTE pcm_buffer[PLAYING_BUFFER_SIZE];
 
 static HANDLE decoder_handle = INVALID_HANDLE_VALUE;
@@ -118,14 +117,6 @@ In_Module mod = {
 	NULL,	// setinfo
 	NULL		// out_mod
 };
-
-typedef struct _buffer 
-{
-	long		data_length;
-	BYTE	   *buffer;
-} data_buf;
-
-static data_buf remain_data; // for transcoding (buffer for data that is decoded but is not copied)
 
 static void tta_error_message(int error, const wchar_t *filename)
 {
@@ -658,17 +649,6 @@ extern "C"
 		*nch = dec->GetNumberofChannel();
 		*srate = dec->GetSampleRate();
 		*size = dec->GetDataLength() * (*bps / 8) * (*nch);
-		remain_data.data_length = 0;
-
-		if (NULL != remain_data.buffer) 
-		{
-			delete[] remain_data.buffer;
-			remain_data.buffer = NULL;
-		}
-		else
-		{
-			// do nothing
-		}
 
 		return (intptr_t)dec;
 	}
@@ -676,10 +656,11 @@ extern "C"
 	__declspec(dllexport) intptr_t __cdecl winampGetExtendedRead_getData(intptr_t handle, char *dest, int len, int *killswitch)
 	{
 		CDecodeFile *dec = (CDecodeFile *)handle;
-		unsigned char *buf = NULL;
+		CDecodeFile *dec = &transcode_ttafile;
 		int dest_used = 0;
 		int n = 0;
 		int bitrate;
+		int32_t decoded_samples = 0;
 		int32_t decoded_bytes = 0;
 
 		if (!dec->isDecodable()) 
@@ -691,111 +672,28 @@ extern "C"
 			// do nothing
 		}
 
-		buf = new unsigned char[TRANSCODING_BUFFER_SIZE];
-
-		// restore remain (not copied) data
-		if (remain_data.data_length != 0) 
+		try
 		{
-			while (min(len - dest_used, remain_data.data_length) > 0 && !*killswitch) 
-			{
-				n = min(len - dest_used, remain_data.data_length);
-				memcpy_s(dest + dest_used, len - dest_used, remain_data.buffer + dest_used, n);
-				dest_used += n;
-				remain_data.data_length -= n;
-			}
+			decoded_samples = dec->GetSamples((BYTE *)dest, len, &bitrate);
+		}
+		catch (CDecodeFile_exception &ex)
+		{
+			tta_error_message(ex.code(), dec->GetFileName());
+			dest_used = -1;
+			//					break;
+		}
 
-			if (remain_data.data_length != 0) 
-			{
-				memcpy_s(buf, TRANSCODING_BUFFER_SIZE, remain_data.buffer + dest_used, remain_data.data_length);
-				delete[] remain_data.buffer;
-				remain_data.buffer = new BYTE[remain_data.data_length];
-				memcpy_s(remain_data.buffer, remain_data.data_length, buf, remain_data.data_length);
-				return (intptr_t)dest_used;
-			}
-			else
-			{
-				delete[] remain_data.buffer;
-				remain_data.buffer = NULL;
-			}
+		if (0 != decoded_samples)
+		{
+			decoded_bytes = decoded_samples * dec->GetBitsperSample() / 8 * dec->GetNumberofChannel();
 		}
 		else
 		{
 			// Do nothing
 		}
 
-		while (dest_used < len && !*killswitch)
-		{
-			// do we need to decode more?
-			if (n >= decoded_bytes)
-			{
-				try 
-				{
-					decoded_bytes = dec->GetSamples(buf, TRANSCODING_BUFFER_SIZE, &bitrate);
-				}
-				catch (CDecodeFile_exception &ex) 
-				{
-					tta_error_message(ex.code(), dec->GetFileName());
-					dest_used = -1;
-					break;
-				}
 
-				if (0 == decoded_bytes) 
-				{
-					break; // end of stream
-				}
-				else
-				{
-					decoded_bytes = decoded_bytes * dec->GetBitsperSample() / 8 * dec->GetNumberofChannel();
-					n = min(len - dest_used, decoded_bytes);
-					if (n > 0)
-					{
-						memcpy_s(dest + dest_used, len - dest_used, buf, n);
-						dest_used += n;
-					}
-					else
-					{
-						// do nothing
-					}
-				}
-			}
-			else 
-			{
-				// do nothing
-			}
-		}
-
-		// copy as much as we can back to winamp
-		if (n > 0 && n < decoded_bytes) 
-		{
-			remain_data.data_length = decoded_bytes - n;
-			if (NULL != remain_data.buffer)
-			{
-				delete[] remain_data.buffer;
-				remain_data.buffer = NULL;
-			}
-			else
-			{
-				// Do nothing
-			}
-			remain_data.buffer = new BYTE[remain_data.data_length];
-			memcpy_s(remain_data.buffer, remain_data.data_length, buf + n, remain_data.data_length);
-		}
-		else
-		{
-			// Do nothing
-		}
-
-		if (NULL != buf)
-		{
-			delete[] buf;
-			buf = NULL;
-		}
-		else
-		{
-			// Do nothing
-		}
-
-		return (intptr_t)dest_used;
+		return (intptr_t)decoded_bytes;
 	}
 
 	// return nonzero on success, zero on failure
@@ -817,25 +715,6 @@ extern "C"
 
 	__declspec( dllexport ) void __cdecl winampGetExtendedRead_close(intptr_t handle)
 	{
-		if (remain_data.buffer != NULL) 
-		{
-			delete [] remain_data.buffer;
-			remain_data.buffer = NULL;
-		}
-		else
-		{
-			// nothing to do
-		}
-
-		CDecodeFile *dec = (CDecodeFile *)handle;
-		if (NULL != dec && dec->isValid()) 
-		{
-			dec = NULL;
-		}
-		else
-		{
-			// do nothing
-		}
-
+		// Do nothing
 	}
 }
