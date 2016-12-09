@@ -51,7 +51,7 @@ struct TagInfo
 	std::wstring    bitrate;
 };
 
-class CMediaLibrary  
+class CMediaLibrary
 {
 public:
 	CMediaLibrary();

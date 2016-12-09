@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "libtta.h"
 
 TTAint32 CALLBACK read_callback(TTA_io_callback *io, TTAuint8 *buffer, TTAuint32 size) {
-	TTA_io_callback_wrapper *iocb = (TTA_io_callback_wrapper *)io; 
+	TTA_io_callback_wrapper *iocb = (TTA_io_callback_wrapper *)io;
 	TTAint32 result;
 
 	if (::ReadFile(iocb->handle, buffer, size, (LPDWORD)&result, NULL)) {
@@ -33,24 +33,24 @@ TTAint32 CALLBACK read_callback(TTA_io_callback *io, TTAuint8 *buffer, TTAuint32
 } // read_callback
 
 TTAint32 CALLBACK write_callback(TTA_io_callback *io, TTAuint8 *buffer, TTAuint32 size) {
-	TTA_io_callback_wrapper *iocb = (TTA_io_callback_wrapper *)io; 
+	TTA_io_callback_wrapper *iocb = (TTA_io_callback_wrapper *)io;
 	TTAint32 result;
 
-	if (::WriteFile(iocb->handle, buffer, size, (LPDWORD)&result, NULL)){
+	if (::WriteFile(iocb->handle, buffer, size, (LPDWORD)&result, NULL)) {
 		return result;
 	}
 	return 0;
 } // write_callback
 
 TTAint64 CALLBACK seek_callback(TTA_io_callback *io, TTAint64 offset) {
-	TTA_io_callback_wrapper *iocb = (TTA_io_callback_wrapper *)io; 
+	TTA_io_callback_wrapper *iocb = (TTA_io_callback_wrapper *)io;
 	return ::SetFilePointer(iocb->handle, (LONG)offset, NULL, FILE_BEGIN);
 } // seek_callback
 
 
 
-CDecodeFile::CDecodeFile(void) : paused(0), seek_needed(1), decode_pos_ms(0), bitrate(0), Filesize(0), 
-		st_state(0), decoderFileHANDLE(INVALID_HANDLE_VALUE), TTA(NULL), signature(sig_number)
+CDecodeFile::CDecodeFile(void) : paused(0), seek_needed(1), decode_pos_ms(0), bitrate(0), Filesize(0),
+st_state(0), decoderFileHANDLE(INVALID_HANDLE_VALUE), TTA(NULL), signature(sig_number)
 {
 	iocb_wrapper.handle = INVALID_HANDLE_VALUE;
 	iocb_wrapper.iocb.read = NULL;
@@ -68,7 +68,8 @@ CDecodeFile::~CDecodeFile(void)
 	if (INVALID_HANDLE_VALUE != decoderFileHANDLE) {
 		::CloseHandle(decoderFileHANDLE);
 		decoderFileHANDLE = INVALID_HANDLE_VALUE;
-	} else {
+	}
+	else {
 		// do nothing
 	}
 
@@ -87,9 +88,10 @@ CDecodeFile::~CDecodeFile(void)
 	signature = -1;
 
 	if (NULL != TTA) {
-		reinterpret_cast< tta::tta_decoder* >(&ttadec_mem)->~tta_decoder();
+		reinterpret_cast<tta::tta_decoder*>(&ttadec_mem)->~tta_decoder();
 		TTA = NULL;
-	} else {
+	}
+	else {
 		// do nothing
 	}
 	::LeaveCriticalSection(&CriticalSection);
@@ -123,7 +125,7 @@ int CDecodeFile::SetFileName(const wchar_t *filename)
 	iocb_wrapper.iocb.seek = &seek_callback;
 
 	if (TTA != NULL) {
-		reinterpret_cast< tta::tta_decoder* >(&ttadec_mem)->~tta_decoder();
+		reinterpret_cast<tta::tta_decoder*>(&ttadec_mem)->~tta_decoder();
 		TTA = NULL;
 	}
 	else {
@@ -137,7 +139,7 @@ int CDecodeFile::SetFileName(const wchar_t *filename)
 
 	catch (tta::tta_exception &ex) {
 		if (NULL != TTA) {
-			reinterpret_cast< tta::tta_decoder* >(TTA)->~tta_decoder();
+			reinterpret_cast<tta::tta_decoder*>(TTA)->~tta_decoder();
 			TTA = NULL;
 		}
 		else {
@@ -180,7 +182,8 @@ long double CDecodeFile::SeekPosition(int *done)
 	if (seek_needed >= GetLengthbymsec()) {
 		decode_pos_ms = GetLengthbymsec();
 		*done = 1;
-	} else {
+	}
+	else {
 		decode_pos_ms = seek_needed;
 		seek_needed = -1;
 	}
@@ -188,7 +191,8 @@ long double CDecodeFile::SeekPosition(int *done)
 	if (NULL == TTA) {
 		::LeaveCriticalSection(&CriticalSection);
 		return (double)0;
-	} else {
+	}
+	else {
 		// do nothing
 	}
 
@@ -215,10 +219,10 @@ int  CDecodeFile::GetSamples(BYTE *buffer, size_t buffersize, int *current_bitra
 
 	if (INVALID_HANDLE_VALUE == decoderFileHANDLE)
 	{
-		delete []temp;
+		delete[]temp;
 		temp = 0;
 		return 0; // no decode data
-	} 
+	}
 	else
 	{
 		// do nothing
@@ -240,7 +244,7 @@ int  CDecodeFile::GetSamples(BYTE *buffer, size_t buffersize, int *current_bitra
 	}
 
 	catch (tta::tta_exception &ex) {
-		delete []temp;
+		delete[]temp;
 		temp = 0;
 		throw CDecodeFile_exception(ex.code());
 	}
@@ -249,14 +253,14 @@ int  CDecodeFile::GetSamples(BYTE *buffer, size_t buffersize, int *current_bitra
 		skip_len += len;
 		errno_t err = memcpy_s(buffer, buffersize, temp, len * tta_info.nch * tta_info.bps / 8);
 		decode_pos_ms += (__int32)(skip_len * 1000. / tta_info.sps);
-		*current_bitrate = TTA->get_rate();	
-	} 
+		*current_bitrate = TTA->get_rate();
+	}
 	else
 	{
 		// Do nothing
 	}
 
-	delete []temp;
+	delete[]temp;
 	temp = 0;
 
 	::LeaveCriticalSection(&CriticalSection);
@@ -271,7 +275,8 @@ void CDecodeFile::SetOutputBPS(unsigned long bps)
 
 	if (NULL == TTA) {
 		throw CDecodeFile_exception(TTA_MEMORY_ERROR);
-	} else {
+	}
+	else {
 		// do nothing
 	}
 
