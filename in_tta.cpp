@@ -233,26 +233,11 @@ void about(HWND hwndParent)
 
 void init()
 {
-	remain_data.data_length = 0;
-	remain_data.buffer = NULL;
-
 	Wasabi_Init();
 }
 
 void quit()
 {
-	remain_data.data_length = 0;
-
-	if (remain_data.buffer != NULL)
-	{
-		delete [] remain_data.buffer;
-		remain_data.buffer = NULL;
-	}
-	else
-	{
-		// Do nothing
-	}
-
 	Wasabi_Quit();
 }
 
@@ -407,19 +392,6 @@ int ispaused()
 
 void stop()
 {
-
-	remain_data.data_length = 0;
-
-	if (remain_data.buffer != NULL)
-	{
-		delete [] remain_data.buffer;
-		remain_data.buffer = NULL;
-	}
-	else
-	{
-		// Do nothing
-	}
-
 	if (INVALID_HANDLE_VALUE != decoder_handle) 
 	{
 		killDecoderThread = 1;
