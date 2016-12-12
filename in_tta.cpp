@@ -158,7 +158,7 @@ static void tta_error_message(int error, const wchar_t *filename)
 		MB_OK | MB_ICONERROR | MB_SYSTEMMODAL);
 
 }
-
+/*
 static BOOL CALLBACK config_dialog(HWND dialog, UINT message, WPARAM wparam, LPARAM lparam)
 {
 
@@ -178,6 +178,8 @@ static BOOL CALLBACK config_dialog(HWND dialog, UINT message, WPARAM wparam, LPA
 	}
 	return FALSE;
 }
+*/
+
 static BOOL CALLBACK about_dialog(HWND dialog, UINT message, WPARAM wparam, LPARAM lparam)
 {
 	switch (message)
@@ -205,8 +207,8 @@ static BOOL CALLBACK about_dialog(HWND dialog, UINT message, WPARAM wparam, LPAR
 
 void config(HWND hwndParent)
 {
-	DialogBox(mod.hDllInstance, MAKEINTRESOURCE(IDD_CONFIG),
-		hwndParent, config_dialog);
+	DialogBox(mod.hDllInstance, MAKEINTRESOURCE(IDD_ABOUT),
+		hwndParent, about_dialog);
 }
 
 void about(HWND hwndParent)
