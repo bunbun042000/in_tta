@@ -467,7 +467,7 @@ DWORD WINAPI __stdcall DecoderThread(void *p)
 {
 
 	int done = 0;
-	int len;
+	int decoded_samples;
 	const __int32 PLAYING_BUFFER_SIZE = PLAYING_BUFFER_LENGTH * MAX_DEPTH * MAX_NCH;
 	BYTE pcm_buffer[PLAYING_BUFFER_SIZE];
 
@@ -525,7 +525,7 @@ DWORD WINAPI __stdcall DecoderThread(void *p)
 		{
 			try
 			{
-				len = playing_ttafile.GetSamples(pcm_buffer, PLAYING_BUFFER_SIZE, &bitrate);
+				decoded_samples = playing_ttafile.GetSamples(pcm_buffer, PLAYING_BUFFER_SIZE, &bitrate);
 			}
 			catch (CDecodeFile_exception &ex)
 			{
@@ -537,23 +537,23 @@ DWORD WINAPI __stdcall DecoderThread(void *p)
 				return 0;
 			}
 
-			if (len == 0)
+			if (decoded_samples == 0)
 			{
 				done = 1;
 			}
 			else
 			{
-				do_vis(pcm_buffer, len, playing_ttafile.GetOutputBPS(), playing_ttafile.GetDecodePosMs());
+				do_vis(pcm_buffer, decoded_samples, playing_ttafile.GetOutputBPS(), playing_ttafile.GetDecodePosMs());
 				if (mod.dsp_isactive())
 				{
-					len = mod.dsp_dosamples((short *)pcm_buffer, len, playing_ttafile.GetOutputBPS(),
+					decoded_samples = mod.dsp_dosamples((short *)pcm_buffer, decoded_samples, playing_ttafile.GetOutputBPS(),
 						playing_ttafile.GetNumberofChannel(), playing_ttafile.GetSampleRate());
 				}
 				else
 				{
 					// do nothing
 				}
-				mod.outMod->Write((char *)pcm_buffer, len * playing_ttafile.GetNumberofChannel()
+				mod.outMod->Write((char *)pcm_buffer, decoded_samples * playing_ttafile.GetNumberofChannel()
 					* (playing_ttafile.GetOutputBPS() >> 3));
 			}
 
