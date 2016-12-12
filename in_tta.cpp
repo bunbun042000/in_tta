@@ -158,27 +158,6 @@ static void tta_error_message(int error, const wchar_t *filename)
 		MB_OK | MB_ICONERROR | MB_SYSTEMMODAL);
 
 }
-/*
-static BOOL CALLBACK config_dialog(HWND dialog, UINT message, WPARAM wparam, LPARAM lparam)
-{
-
-	switch (message)
-	{
-	case WM_INITDIALOG:
-		return TRUE;
-	case WM_COMMAND:
-		switch (LOWORD(wparam))
-		{
-		case IDOK:
-		case IDCANCEL:
-			EndDialog(dialog, wparam);
-			return TRUE;
-		}
-		break;
-	}
-	return FALSE;
-}
-*/
 
 static BOOL CALLBACK about_dialog(HWND dialog, UINT message, WPARAM wparam, LPARAM lparam)
 {
