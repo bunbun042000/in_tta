@@ -268,7 +268,7 @@ bool TTA_AlbumArtProvider::IsMine(const wchar_t *filename)
 	const wchar_t *extension = extensionW(filename);
 	if (extension && *extension)
 	{
-		return (_wcsicmp(extension, L"tta") == 0) | (_wcsicmp(extension, L"TTA") == 0) ? true : false;
+		return ((_wcsicmp(extension, L"tta") == 0) | (_wcsicmp(extension, L"TTA") == 0)) ? true : false;
 	}
 	else
 	{
