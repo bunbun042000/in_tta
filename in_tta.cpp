@@ -51,8 +51,6 @@
 
  // for playing static variables
 static __declspec(align(16)) CDecodeFile playing_ttafile;
-static const __int32 PLAYING_BUFFER_SIZE = PLAYING_BUFFER_LENGTH * MAX_DEPTH * MAX_NCH;
-static BYTE pcm_buffer[PLAYING_BUFFER_SIZE];
 
 static HANDLE decoder_handle = INVALID_HANDLE_VALUE;
 static DWORD WINAPI __stdcall DecoderThread(void *p);
@@ -470,6 +468,8 @@ DWORD WINAPI __stdcall DecoderThread(void *p)
 
 	int done = 0;
 	int len;
+	const __int32 PLAYING_BUFFER_SIZE = PLAYING_BUFFER_LENGTH * MAX_DEPTH * MAX_NCH;
+	BYTE pcm_buffer[PLAYING_BUFFER_SIZE];
 
 	if (!playing_ttafile.isValid() || !playing_ttafile.isDecodable())
 	{
