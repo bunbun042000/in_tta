@@ -675,7 +675,7 @@ extern "C"
 	__declspec(dllexport) int __cdecl winampGetExtendedRead_setTime(intptr_t handle, int millisecs)
 	{
 		int done = 0;
-		CDecodeFile *dec = (CDecodeFile *)handle;
+		CDecodeFile *dec = &transcode_ttafile;
 		if (NULL != dec && dec->isValid() && dec->isDecodable())
 		{
 			dec->SetSeekNeeded(millisecs);

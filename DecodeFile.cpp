@@ -124,7 +124,7 @@ int CDecodeFile::SetFileName(const wchar_t *filename)
 	iocb_wrapper.iocb.read = &read_callback;
 	iocb_wrapper.iocb.seek = &seek_callback;
 
-	if (TTA != NULL) {
+	if (NULL != TTA) {
 		reinterpret_cast<tta::tta_decoder*>(&ttadec_mem)->~tta_decoder();
 		TTA = NULL;
 	}
