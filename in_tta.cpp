@@ -34,6 +34,7 @@
 #include <Shlwapi.h>
 #include <stdlib.h>
 #include <type_traits>
+#include <strsafe.h>
 
 #include <Winamp/in2.h>
 #include <Agave/Language/api_language.h>
@@ -49,7 +50,9 @@
 #include "..\common\VersionNo.h"
 #include "resource.h"
 
- // for playing static variables
+const static int MAX_MESSAGE_LENGTH = 1024;
+
+// for playing static variables
 static __declspec(align(16)) CDecodeFile playing_ttafile;
 
 static HANDLE decoder_handle = INVALID_HANDLE_VALUE;
@@ -84,7 +87,7 @@ void eq_set(int on, char data[10], int preamp);
 
 In_Module mod = {
 	IN_VER,
-	"TTA Audio Decoder " PLUGIN_VERSION,
+	"TTA Audio Decoder " PLUGIN_VERSION_CHAR,
 	NULL,		// hMainWindow
 	NULL,		// hDllInstance
 	"TTA\0TTA Audio File (*.TTA)\0",
@@ -116,41 +119,41 @@ In_Module mod = {
 
 static void tta_error_message(int error, const wchar_t *filename)
 {
-	wchar_t message[1024];
+	wchar_t message[MAX_MESSAGE_LENGTH];
 
 	std::wstring name(filename);
 
 	switch (error)
 	{
 	case TTA_OPEN_ERROR:
-		wsprintf(message, L"Can't open file:\n%ls", name.c_str());
+		StringCbPrintf(message, MAX_MESSAGE_LENGTH, L"Can't open file:\n%ls", name.c_str());
 		break;
 	case TTA_FORMAT_ERROR:
-		wsprintf(message, L"Unknown TTA format version:\n%ls", name.c_str());
+		StringCbPrintf(message, MAX_MESSAGE_LENGTH, L"Unknown TTA format version:\n%ls", name.c_str());
 		break;
 	case TTA_NOT_SUPPORTED:
-		wsprintf(message, L"Not supported file format:\n%ls", name.c_str());
+		StringCbPrintf(message, MAX_MESSAGE_LENGTH, L"Not supported file format:\n%ls", name.c_str());
 		break;
 	case TTA_FILE_ERROR:
-		wsprintf(message, L"File is corrupted:\n%ls", name.c_str());
+		StringCbPrintf(message, MAX_MESSAGE_LENGTH, L"File is corrupted:\n%ls", name.c_str());
 		break;
 	case TTA_READ_ERROR:
-		wsprintf(message, L"Can't read from file:\n%ls", name.c_str());
+		StringCbPrintf(message, MAX_MESSAGE_LENGTH, L"Can't read from file:\n%ls", name.c_str());
 		break;
 	case TTA_WRITE_ERROR:
-		wsprintf(message, L"Can't write to file:\n%ls", name.c_str());
+		StringCbPrintf(message, MAX_MESSAGE_LENGTH, L"Can't write to file:\n%ls", name.c_str());
 		break;
 	case TTA_MEMORY_ERROR:
-		wsprintf(message, L"Insufficient memory available");
+		StringCbPrintf(message, MAX_MESSAGE_LENGTH, L"Insufficient memory available");
 		break;
 	case TTA_SEEK_ERROR:
-		wsprintf(message, L"file seek error");
+		StringCbPrintf(message, MAX_MESSAGE_LENGTH, L"file seek error");
 		break;
 	case TTA_PASSWORD_ERROR:
-		wsprintf(message, L"password protected file");
+		StringCbPrintf(message, MAX_MESSAGE_LENGTH, L"password protected file");
 		break;
 	default:
-		wsprintf(message, L"Unknown TTA decoder error");
+		StringCbPrintf(message, MAX_MESSAGE_LENGTH, L"Unknown TTA decoder error");
 		break;
 	}
 
@@ -164,9 +167,8 @@ static BOOL CALLBACK about_dialog(HWND dialog, UINT message, WPARAM wparam, LPAR
 	switch (message)
 	{
 	case WM_INITDIALOG:
-		SetDlgItemText(dialog, IDC_PLUGIN_VERSION,
-			L"Winamp plug-in version " PLUGIN_VERSION "\nbased on "
-			LIBTTA_VERSION "\n" PROJECT_URL);
+		SetDlgItemText(dialog, IDC_PLUGIN_VERSION, 
+			IN_TTA_PLUGIN_VERSION_CREADIT);
 		SetDlgItemText(dialog, IDC_PLUGIN_CREADIT,
 			ORIGINAL_CREADIT01 ORIGINAL_CREADIT02 ORIGINAL_CREADIT03
 			CREADIT01 CREADIT02);
