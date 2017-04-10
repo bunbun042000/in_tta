@@ -17,7 +17,6 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <stdio.h>
 #include <Wasabi/api/service/api_service.h>
 #include <Agave/Config/api_config.h>
 #include <Wasabi/api/memmgr/api_memmgr.h>

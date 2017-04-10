@@ -32,7 +32,6 @@
 #include "in_tta.h"
 
 #include <Shlwapi.h>
-#include <stdlib.h>
 #include <type_traits>
 #include <strsafe.h>
 

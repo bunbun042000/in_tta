@@ -29,7 +29,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <taglib/attachedpictureframe.h>
 #include <sstream>
 #include <iomanip>
-#include <string.h>
+#include <strsafe.h>
 
 //////////////////////////////////////////////////////////////////////
 // Create / Destroy
