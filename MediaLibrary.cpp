@@ -126,7 +126,7 @@ bool CMediaLibrary::GetTagInfo(const std::wstring fn)
 			<< L")\nLength\t\t: " << second.str();
 		TagDataW.Format = ttainfo_temp.str();
 
-		TagDataW.bitrate = std::to_wstring(TTAFile.audioProperties()->bitrate());
+		TagDataW.bitrate = std::to_wstring((long long)TTAFile.audioProperties()->bitrate());
 
 		std::wstring temp;
 		if (NULL != TTAFile.ID3v2Tag())
