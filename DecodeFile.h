@@ -67,28 +67,28 @@ public:
 	CDecodeFile(void);
 	virtual ~CDecodeFile(void);
 
-	bool			isValid() {return sig_number == signature ? true : false;}
-	bool			isDecodable() {return decoderFileHANDLE != INVALID_HANDLE_VALUE ? true : false;}
+	bool			isValid() { return sig_number == signature ? true : false; }
+	bool			isDecodable() { return decoderFileHANDLE != INVALID_HANDLE_VALUE ? true : false; }
 
 	int				SetFileName(const wchar_t *filename);
 	const wchar_t  *GetFileName() { return FileName.c_str(); }
 	int				GetSamples(BYTE *buffer, size_t buffersize, int *current_bitrate);
 
-	int				GetPaused(){return paused;}
-	void			SetPaused(int p){paused = p;}
-	double			GetDecodePosMs(){return decode_pos_ms;}
+	int				GetPaused() { return paused; }
+	void			SetPaused(int p) { paused = p; }
+	double			GetDecodePosMs() { return decode_pos_ms; }
 	long double		SeekPosition(int *done);
-	void			SetSeekNeeded(int sn){seek_needed = sn;}
-	int				GetSeekNeeded(){return seek_needed;}
-	int				GetSampleRate() {return tta_info.sps;}
-	int				GetBitrate() {return (int) (bitrate);}
-	__int32			GetNumberofChannel() {return tta_info.nch;}
-	__int32			GetLengthbymsec() {return (__int32)(tta_info.samples / tta_info.sps * 1000);}
-	int				GetDataLength() {return tta_info.samples;}
-	TTAuint8		GetByteSize() {return TTAuint8(tta_info.bps/8);}
-	unsigned long	GetOutputBPS() {return tta_info.bps;}
+	void			SetSeekNeeded(int sn) { seek_needed = sn; }
+	int				GetSeekNeeded() { return seek_needed; }
+	int				GetSampleRate() { return tta_info.sps; }
+	int				GetBitrate() { return (int)(bitrate); }
+	__int32			GetNumberofChannel() { return tta_info.nch; }
+	__int32			GetLengthbymsec() { return (__int32)(tta_info.samples / tta_info.sps * 1000); }
+	int				GetDataLength() { return tta_info.samples; }
+	TTAuint8		GetByteSize() { return TTAuint8(tta_info.bps / 8); }
+	unsigned long	GetOutputBPS() { return tta_info.bps; }
 	void			SetOutputBPS(unsigned long bps);
-	__int32			GetBitsperSample() {return tta_info.bps;}
+	__int32			GetBitsperSample() { return tta_info.bps; }
 
 };
 

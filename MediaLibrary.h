@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define AFX_MediaLibrary_H__997DC726_50DB_46B4_A156_DB5E92EC2BE8__INCLUDED_
 
 #include "..\Winamp SDK\Winamp\wa_ipc.h"
+#include "libtta.h"
 
 #include <taglib/tstring.h>
 #include <taglib/trueaudiofile.h>
@@ -50,7 +51,7 @@ struct TagInfo
 	std::wstring    bitrate;
 };
 
-class CMediaLibrary  
+class CMediaLibrary
 {
 public:
 	CMediaLibrary();

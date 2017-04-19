@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #pragma once
 #define UNICODE_INPUT_PLUGIN
+#include "libtta.h"
 
 static const __int32 PLAYING_BUFFER_LENGTH = 576;
 static const __int32 TRANSCODING_BUFFER_LENGTH = 5120;
@@ -26,26 +27,8 @@ static const unsigned __int32 TTA1_SIGN = 0x31415454;
 static const __int32 READER_BUFFER_SIZE = 5184;
 static const long double FRAME_TIME = 1.04489795918367346939;
 static const int SEEK_STEP = (int)(FRAME_TIME * 1000);
-static const __int32 MAX_DEPTH = 3;
-static const __int32 MAX_BPS = (MAX_DEPTH * 8);
-static const __int32 MIN_BPS = 16;
-static const __int32 MAX_NCH = 6;
 
 static const __int32 MAX_PATHLEN = 1024;
-
-typedef enum {
-	TTA_SUCCESS,	// setjmp data saved
-	TTA_NO_ERROR,	// no known errors found
-	TTA_OPEN_ERROR,	// can't open file
-	TTA_FORMAT_ERROR,	// not compatible file format
-	TTA_FILE_ERROR,	// file is corrupted
-	TTA_READ_ERROR,	// can't read from input file
-	TTA_WRITE_ERROR,	// can't write to output file
-	TTA_SEEK_ERROR,	// file seek error
-	TTA_MEMORY_ERROR,	// insufficient memory available
-	TTA_PASSWORD_ERROR,	// password protected file
-	TTA_NOT_SUPPORTED	// unsupported architecture
-} TTA_CODEC_STATUS;
 
 typedef struct {
 	unsigned __int32 TTAid;
