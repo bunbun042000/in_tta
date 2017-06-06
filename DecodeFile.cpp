@@ -210,15 +210,12 @@ long double CDecodeFile::SeekPosition(int *done)
 
 int  CDecodeFile::GetSamples(BYTE *buffer, size_t buffersize, int *current_bitrate)
 {
-	BYTE *temp = new BYTE[buffersize + 1];
 	int skip_len = 0;
 	int len = 0;
 
 
-	if (INVALID_HANDLE_VALUE == decoderFileHANDLE)
+	if (INVALID_HANDLE_VALUE == decoderFileHANDLE || NULL == buffer || 0 == buffersize)
 	{
-		delete[]temp;
-		temp = 0;
 		return 0; // no decode data
 	}
 	else
@@ -238,18 +235,15 @@ int  CDecodeFile::GetSamples(BYTE *buffer, size_t buffersize, int *current_bitra
 	}
 
 	try {
-		len = TTA->process_stream(temp, buffersize);
+		len = TTA->process_stream(buffer, buffersize);
 	}
 
 	catch (tta::tta_exception &ex) {
-		delete[]temp;
-		temp = 0;
 		throw CDecodeFile_exception(ex.code());
 	}
 
 	if (len != 0) {
 		skip_len += len;
-		errno_t err = memcpy_s(buffer, buffersize, temp, len * tta_info.nch * tta_info.bps / 8);
 		decode_pos_ms += (__int32)(skip_len * 1000. / tta_info.sps);
 		*current_bitrate = TTA->get_rate();
 	}
@@ -257,9 +251,6 @@ int  CDecodeFile::GetSamples(BYTE *buffer, size_t buffersize, int *current_bitra
 	{
 		// Do nothing
 	}
-
-	delete[]temp;
-	temp = 0;
 
 	::LeaveCriticalSection(&CriticalSection);
 
