@@ -12,7 +12,7 @@
 
  /*
  The ttaplugin-winamp project.
- Copyright (C) 2005-2016 Yamagata Fumihiro
+ Copyright (C) 2005-2017 Yamagata Fumihiro
 
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -29,11 +29,13 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "in_tta.h"
-
 #include <Shlwapi.h>
 #include <type_traits>
 #include <strsafe.h>
+
+#include "AlbumArt.h"
+#include "MediaLibrary.h"
+#include "in_tta.h"
 
 #include <Winamp/in2.h>
 #include <Agave/Language/api_language.h>
@@ -42,10 +44,7 @@
 #include <taglib/trueaudiofile.h>
 #include <taglib/tstring.h>
 
-#include "AlbumArt.h"
 #include "DecodeFile.h"
-#include "MediaLibrary.h"
-
 #include "..\common\VersionNo.h"
 #include "resource.h"
 
@@ -166,7 +165,7 @@ static BOOL CALLBACK about_dialog(HWND dialog, UINT message, WPARAM wparam, LPAR
 	switch (message)
 	{
 	case WM_INITDIALOG:
-		SetDlgItemText(dialog, IDC_PLUGIN_VERSION, 
+		SetDlgItemText(dialog, IDC_PLUGIN_VERSION,
 			IN_TTA_PLUGIN_VERSION_CREADIT);
 		SetDlgItemText(dialog, IDC_PLUGIN_CREADIT,
 			IN_TTA_PLUGIN_COPYRIGHT_CREADIT);
@@ -263,7 +262,7 @@ int play(const wchar_t *filename)
 	}
 	else
 	{
-		// do nothing
+		// Do nothing
 	}
 
 	try
@@ -286,7 +285,7 @@ int play(const wchar_t *filename)
 	}
 	else
 	{
-		//do nothing
+		// Do nothing
 	}
 
 	// setup information display
@@ -426,7 +425,7 @@ void setpan(int pan)
 
 void eq_set(int on, char data[10], int preamp)
 {
-	// do nothing.
+	// Do nothing
 }
 
 static void do_vis(unsigned char *data, int count, int bps, long double position)
@@ -475,7 +474,7 @@ DWORD WINAPI __stdcall DecoderThread(void *p)
 		}
 		else
 		{
-			// do nothing
+			// Do nothing
 		}
 
 		if (playing_ttafile.GetSeekNeeded() != -1)
@@ -532,7 +531,7 @@ DWORD WINAPI __stdcall DecoderThread(void *p)
 				}
 				else
 				{
-					// do nothing
+					// Do nothing
 				}
 				mod.outMod->Write((char *)pcm_buffer, decoded_samples * playing_ttafile.GetNumberofChannel()
 					* (playing_ttafile.GetOutputBPS() >> 3));
@@ -544,6 +543,7 @@ DWORD WINAPI __stdcall DecoderThread(void *p)
 		{
 			::Sleep(20);
 		}
+
 	}
 
 	return 0;
@@ -560,6 +560,7 @@ extern "C"
 	__declspec(dllexport) int __cdecl
 		winampGetExtendedFileInfoW(const wchar_t *fn, const wchar_t *data, wchar_t *dest, size_t destlen)
 	{
+
 		return m_ReadTag.GetExtendedFileInfo(fn, data, dest, destlen);
 	}
 
