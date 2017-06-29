@@ -490,7 +490,6 @@ DWORD WINAPI __stdcall DecoderThread(void *p)
 
 		if (done)
 		{
-			mod.outMod->CanWrite();
 			if (!mod.outMod->IsPlaying())
 			{
 				PostMessage(mod.hMainWindow, WM_WA_MPEG_EOF, 0, 0);
