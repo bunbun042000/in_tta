@@ -527,14 +527,14 @@ DWORD WINAPI __stdcall DecoderThread(void *p)
 				do_vis(pcm_buffer, decoded_samples, playing_ttafile.GetOutputBPS(), playing_ttafile.GetDecodePosMs());
 				if (mod.dsp_isactive())
 				{
-					decoded_samples = mod.dsp_dosamples((short *)pcm_buffer, decoded_samples, playing_ttafile.GetOutputBPS(),
+					decoded_samples = mod.dsp_dosamples(reinterpret_cast<short*>(pcm_buffer), decoded_samples, playing_ttafile.GetOutputBPS(),
 						playing_ttafile.GetNumberofChannel(), playing_ttafile.GetSampleRate());
 				}
 				else
 				{
 					// Do nothing
 				}
-				mod.outMod->Write((char *)pcm_buffer, decoded_samples * playing_ttafile.GetNumberofChannel()
+				mod.outMod->Write(reinterpret_cast<char *>(pcm_buffer), decoded_samples * playing_ttafile.GetNumberofChannel()
 					* (playing_ttafile.GetOutputBPS() >> 3));
 			}
 
