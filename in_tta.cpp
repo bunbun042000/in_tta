@@ -49,6 +49,8 @@
 #include "resource.h"
 
 const static int MAX_MESSAGE_LENGTH = 1024;
+const static __int32 PLAYING_BUFFER_LENGTH = 576;
+const static __int32 TRANSCODING_BUFFER_LENGTH = 5120;
 
 // for playing static variables
 static __declspec(align(16)) CDecodeFile playing_ttafile;
