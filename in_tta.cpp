@@ -497,7 +497,7 @@ DWORD WINAPI __stdcall DecoderThread(void *p)
 			}
 			else
 			{
-				::Sleep(10);
+				mod.SetInfo(bitrate, playing_ttafile.GetSampleRate() / 1000, playing_ttafile.GetNumberofChannel(), 1);
 			}
 		}
 		else if (mod.outMod->CanWrite() >=
@@ -542,7 +542,9 @@ DWORD WINAPI __stdcall DecoderThread(void *p)
 		}
 		else
 		{
-			::Sleep(20);
+			mod.SetInfo(bitrate, playing_ttafile.GetSampleRate() / 1000, playing_ttafile.GetNumberofChannel(), 1);
+
+			Sleep(1);
 		}
 
 	}
