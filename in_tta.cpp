@@ -450,8 +450,8 @@ DWORD WINAPI __stdcall DecoderThread(void *p)
 
 	int done = 0;
 	int decoded_samples;
-	const __int32 PLAYING_BUFFER_SIZE = PLAYING_BUFFER_LENGTH * MAX_DEPTH * MAX_NCH;
-	BYTE pcm_buffer[PLAYING_BUFFER_SIZE];
+	static const __int32 PLAYING_BUFFER_SIZE = TTA_FIFO_BUFFER_SIZE;
+	static BYTE pcm_buffer[PLAYING_BUFFER_SIZE];
 
 	if (!playing_ttafile.isValid() || !playing_ttafile.isDecodable())
 	{
