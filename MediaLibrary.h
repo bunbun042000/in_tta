@@ -58,6 +58,7 @@ public:
 	__int32  GetExtendedFileInfo(const wchar_t *fn, const wchar_t *Metadata, wchar_t *dest, size_t destlen);
 	__int32  SetExtendedFileInfo(const wchar_t *fn, const wchar_t *Metadata, const wchar_t *val);
 	__int32  WriteExtendedFileInfo();
+	void FlushCache(void);
 	std::wstring GetCurrentFileName() { return FileName; };
 	bool	isValid() { return isValidFile; };
 
@@ -69,7 +70,6 @@ private:
 	std::wstring		FileName;
 	bool				isValidFile;
 
-	void FlushCache(void);
 	bool GetTagInfo(const std::wstring fn);
 
 };

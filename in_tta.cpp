@@ -598,6 +598,7 @@ extern "C"
 
 	__declspec(dllexport) int __cdecl winampWriteExtendedFileInfo()
 	{
+		m_ReadTag.FlushCache();
 		return m_WriteTag.WriteExtendedFileInfo();
 	}
 
