@@ -232,7 +232,7 @@ void getfileinfo(const wchar_t *file, wchar_t *title, int *length_in_ms)
 		TagLib::TrueAudio::File f(fn);
 		if (f.isValid() == true)
 		{
-			*length_in_ms = f.audioProperties()->length() * 1000;
+			*length_in_ms = f.audioProperties()->lengthInMilliseconds();
 		}
 		else
 		{
@@ -393,8 +393,8 @@ int getoutputtime()
 {
 	if (playing_ttafile.isValid() && playing_ttafile.isDecodable())
 	{
-		return (int)(playing_ttafile.GetDecodePosMs()
-			+ (mod.outMod->GetOutputTime() - mod.outMod->GetWrittenTime()));
+		return (int)(playing_ttafile.GetDecodePosMs())
+			+ mod.outMod->GetOutputTime() - mod.outMod->GetWrittenTime();
 	}
 	else
 	{

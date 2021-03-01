@@ -338,7 +338,7 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 		// Do nothing
 	}
 
-	if (AlbumArt != TagLib::ByteVector::null)
+	if (!AlbumArt.isEmpty())
 	{
 		*len = AlbumArt.size();
 		*bits = (char *)Wasabi_Malloc(*len);

@@ -56,6 +56,7 @@ void CMediaLibrary::FlushCache(void)
 
 	GetTagTime = 0;
 
+	TagDataW.Length = 0;
 	TagDataW.Format = L"";
 	TagDataW.Title = L"";
 	TagDataW.Artist = L"";
@@ -91,9 +92,9 @@ bool CMediaLibrary::GetTagInfo(const std::wstring fn)
 		{
 			isValidFile = true;
 		}
-		TagDataW.Length = (unsigned long)(TTAFile.audioProperties()->length() * 1000.L);
+		TagDataW.Length = (unsigned long)(TTAFile.audioProperties()->lengthInMilliseconds());
 
-		int Lengthbysec = TTAFile.audioProperties()->length();
+		int Lengthbysec = TTAFile.audioProperties()->lengthInSeconds();
 		int hour = Lengthbysec / 3600;
 		int min = Lengthbysec / 60;
 		int sec = Lengthbysec % 60;
