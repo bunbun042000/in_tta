@@ -267,7 +267,7 @@ bool TTA_AlbumArtProvider::IsMine(const wchar_t *filename)
 	const wchar_t *extension = extensionW(filename);
 	if (extension && *extension)
 	{
-		return ((_wcsicmp(extension, L"tta") == 0) | (_wcsicmp(extension, L"TTA") == 0)) ? true : false;
+		return ((_wcsicmp(extension, L"tta") == 0) || (_wcsicmp(extension, L"TTA") == 0)) ? true : false;
 	}
 	else
 	{
@@ -417,7 +417,7 @@ int TTA_AlbumArtProvider::SetAlbumArtData(const wchar_t *filename, const wchar_t
 
 	int retval = ALBUMARTPROVIDER_FAILURE;
 	TagLib::String mimeType(L"");
-	int size = 0;
+	unsigned int size = 0;
 	TagLib::ID3v2::AttachedPictureFrame::Type artType = TagLib::ID3v2::AttachedPictureFrame::Other;
 	size_t string_len = 0;
 
@@ -450,7 +450,7 @@ int TTA_AlbumArtProvider::SetAlbumArtData(const wchar_t *filename, const wchar_t
 		mimeType += mime_type;
 		size = len;
 		artType = TagLib::ID3v2::AttachedPictureFrame::FrontCover;
-		AlbumArt.setData((const char *)bits, (TagLib::uint)size);
+		AlbumArt.setData((const char *)bits, size);
 	}
 
 	TagLib::TrueAudio::File TTAFile(filename);
