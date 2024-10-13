@@ -7,7 +7,7 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include "afxres.h"
+#include "winres.h"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -32,7 +32,7 @@ END
 
 2 TEXTINCLUDE 
 BEGIN
-    "#include ""afxres.h""\r\n"
+    "#include ""winres.h""\r\n"
     "\0"
 END
 
@@ -180,11 +180,11 @@ IDI_INFO_ICON           ICON                    "info.ico"
 #define _AFX_NO_TRACKER_RESOURCES
 #define _AFX_NO_PROPERTY_RESOURCES
 
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_JPN)
-LANGUAGE 17, 1
-#pragma code_page(932)
-#include "afxres.rc"     // Standard components
-#endif
+//#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_JPN)
+//LANGUAGE 17, 1
+//#pragma code_page(932)
+//#include "afxres.rc"     // Standard components
+//#endif
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
