@@ -1,6 +1,6 @@
 /*
 The ttaplugin-winamp project.
-Copyright (C) 2005-2011 Yamagata Fumihiro
+Copyright (C) 2005-2025 Yamagata Fumihiro
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -180,7 +180,7 @@ bool CMediaLibrary::GetTagInfo(const std::wstring fn)
 		}
 		else
 		{
-			// do nothing.
+			// Do nothing.
 		}
 	}
 	else
@@ -345,7 +345,8 @@ int CMediaLibrary::GetExtendedFileInfo(const wchar_t *fn, const wchar_t *Metadat
 		}
 
 	}
-	else {
+	else
+	{
 		FileName = L"";
 		RetCode = 0;
 	}
@@ -472,7 +473,7 @@ int CMediaLibrary::WriteExtendedFileInfo()
 		}
 		else
 		{
-			// do nothing
+			// Do nothing
 		}
 
 		if (NULL != TTAFile.ID3v2Tag(true))
@@ -516,7 +517,7 @@ int CMediaLibrary::WriteExtendedFileInfo()
 		}
 		else
 		{
-			// do nothing.
+			// Do nothing.
 		}
 		TTAFile.save();
 	}

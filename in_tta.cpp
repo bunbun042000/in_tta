@@ -12,7 +12,7 @@
 
  /*
  The ttaplugin-winamp project.
- Copyright (C) 2005-2017 Yamagata Fumihiro
+ Copyright (C) 2005-2025 Yamagata Fumihiro
 
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -85,7 +85,8 @@ void setvolume(int volume);
 void setpan(int pan);
 void eq_set(int on, char data[10], int preamp);
 
-In_Module mod = {
+In_Module mod =
+{
 	IN_VER,
 	"TTA Audio Decoder " PLUGIN_VERSION_CHAR,
 	NULL,		// hMainWindow
@@ -324,7 +325,7 @@ void pause()
 	}
 	else
 	{
-		// do nothing
+		// Do nothing
 	}
 
 	mod.outMod->Pause(1);
@@ -338,7 +339,7 @@ void unpause()
 	}
 	else
 	{
-		// do nothing
+		// Do nothing
 	}
 
 	mod.outMod->Pause(0);
@@ -410,7 +411,7 @@ void setoutputtime(int time_in_ms)
 	}
 	else
 	{
-		// do nothing
+		// Do nothing
 	}
 
 }
@@ -461,7 +462,7 @@ DWORD WINAPI __stdcall DecoderThread(void *p)
 	}
 	else
 	{
-		// do nothing
+		// Do nothing
 	}
 
 	int bitrate = playing_ttafile.GetBitrate();
@@ -485,7 +486,7 @@ DWORD WINAPI __stdcall DecoderThread(void *p)
 		}
 		else
 		{
-			// do nothing
+			// Do nothing
 		}
 
 		if (done)
@@ -613,7 +614,7 @@ extern "C"
 		}
 		else
 		{
-			// do nothing
+			// Do nothing
 		}
 
 		try
@@ -650,7 +651,7 @@ extern "C"
 		}
 		else
 		{
-			// do nothing
+			// Do nothing
 		}
 
 		try
