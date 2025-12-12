@@ -1,6 +1,6 @@
 /*
 The ttaplugin-winamp project.
-Copyright (C) 2005-2025 Yamagata Fumihiro
+Copyright (C) 2005-2026 Yamagata Fumihiro
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -23,9 +23,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 TTAint32 CALLBACK read_callback(TTA_io_callback *io, TTAuint8 *buffer, TTAuint32 size)
 {
 	TTA_io_callback_wrapper *iocb = (TTA_io_callback_wrapper *)io;
-	TTAint32 result;
+	TTAint32 result = 1;
 
-	if (::ReadFile(iocb->handle, buffer, size, (LPDWORD)&result, NULL))
+	if (::ReadFile(iocb->handle, buffer, size, (LPDWORD)&result, nullptr))
 	{
 		return result;
 	}
@@ -40,9 +40,9 @@ TTAint32 CALLBACK read_callback(TTA_io_callback *io, TTAuint8 *buffer, TTAuint32
 TTAint32 CALLBACK write_callback(TTA_io_callback *io, TTAuint8 *buffer, TTAuint32 size)
 {
 	TTA_io_callback_wrapper *iocb = (TTA_io_callback_wrapper *)io;
-	TTAint32 result;
+	TTAint32 result = 1;
 
-	if (::WriteFile(iocb->handle, buffer, size, (LPDWORD)&result, NULL))
+	if (::WriteFile(iocb->handle, buffer, size, (LPDWORD)&result, nullptr))
 	{
 		return result;
 	}
@@ -57,24 +57,24 @@ TTAint32 CALLBACK write_callback(TTA_io_callback *io, TTAuint8 *buffer, TTAuint3
 TTAint64 CALLBACK seek_callback(TTA_io_callback *io, TTAint64 offset)
 {
 	TTA_io_callback_wrapper *iocb = (TTA_io_callback_wrapper *)io;
-	return ::SetFilePointer(iocb->handle, (LONG)offset, NULL, FILE_BEGIN);
+	return ::SetFilePointer(iocb->handle, (LONG)offset, nullptr, FILE_BEGIN);
 } // seek_callback
 
-
-
-CDecodeFile::CDecodeFile(void) : paused(0), seek_needed(1), decode_pos_ms(0), bitrate(0), Filesize(0),
-st_state(0), decoderFileHANDLE(INVALID_HANDLE_VALUE), TTA(NULL), signature(sig_number)
+DecodeFile::DecodeFile(void) : FileName(L""), paused(0), seek_needed(1), decode_pos_ms(0), bitrate(0), Filesize(0),
+st_state(0), decoderFileHANDLE(INVALID_HANDLE_VALUE), iocb_wrapper{}, ttadec_mem{}, TTA(nullptr), tta_info{}, signature(sig_number)
 {
+
 	iocb_wrapper.handle = INVALID_HANDLE_VALUE;
-	iocb_wrapper.iocb.read = NULL;
-	iocb_wrapper.iocb.seek = NULL;
-	iocb_wrapper.iocb.write = NULL;
+	iocb_wrapper.iocb.read = nullptr;
+	iocb_wrapper.iocb.seek = nullptr;
+	iocb_wrapper.iocb.write = nullptr;
+
+	pos = 0;
 
 	::InitializeCriticalSection(&CriticalSection);
 }
 
-
-CDecodeFile::~CDecodeFile(void)
+DecodeFile::~DecodeFile(void)
 {
 	::EnterCriticalSection(&CriticalSection);
 
@@ -94,18 +94,19 @@ CDecodeFile::~CDecodeFile(void)
 	bitrate = 0;
 	Filesize = 0;
 	st_state = 0;
+	pos = 0;
 
 	iocb_wrapper.handle = INVALID_HANDLE_VALUE;
-	iocb_wrapper.iocb.read = NULL;
-	iocb_wrapper.iocb.seek = NULL;
-	iocb_wrapper.iocb.write = NULL;
+	iocb_wrapper.iocb.read = nullptr;
+	iocb_wrapper.iocb.seek = nullptr;
+	iocb_wrapper.iocb.write = nullptr;
 
 	signature = -1;
 
-	if (NULL != TTA)
+	if (nullptr != TTA)
 	{
 		reinterpret_cast<tta::tta_decoder*>(&ttadec_mem)->~tta_decoder();
-		TTA = NULL;
+		TTA = nullptr;
 	}
 	else
 	{
@@ -118,14 +119,14 @@ CDecodeFile::~CDecodeFile(void)
 
 }
 
-int CDecodeFile::SetFileName(const wchar_t *filename)
+int DecodeFile::SetFileName(const wchar_t *filename)
 {
 	::EnterCriticalSection(&CriticalSection);
 
 	// check for required data presented
 	if (!filename)
 	{
-		throw CDecodeFile_exception(TTA_OPEN_ERROR);
+		throw DecodeFile_exception(TTA_OPEN_ERROR);
 	}
 	else
 	{
@@ -134,28 +135,28 @@ int CDecodeFile::SetFileName(const wchar_t *filename)
 
 	FileName = filename;
 	decoderFileHANDLE = CreateFileW(FileName.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
-		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
-	if (decoderFileHANDLE == INVALID_HANDLE_VALUE || decoderFileHANDLE == NULL)
+	if (decoderFileHANDLE == INVALID_HANDLE_VALUE || decoderFileHANDLE == nullptr)
 	{
 		::LeaveCriticalSection(&CriticalSection);
-		throw CDecodeFile_exception(TTA_OPEN_ERROR);
+		throw DecodeFile_exception(TTA_OPEN_ERROR);
 	}
 	else
 	{
 		// Do nothing
 	}
 
-	Filesize = ::GetFileSize(decoderFileHANDLE, NULL);
+	Filesize = (long)::GetFileSize(decoderFileHANDLE, nullptr);
 
 	iocb_wrapper.handle = decoderFileHANDLE;
 	iocb_wrapper.iocb.read = &read_callback;
 	iocb_wrapper.iocb.seek = &seek_callback;
 
-	if (NULL != TTA)
+	if (nullptr != TTA)
 	{
 		reinterpret_cast<tta::tta_decoder*>(&ttadec_mem)->~tta_decoder();
-		TTA = NULL;
+		TTA = nullptr;
 	}
 	else
 	{
@@ -170,10 +171,10 @@ int CDecodeFile::SetFileName(const wchar_t *filename)
 
 	catch (tta::tta_exception &ex)
 	{
-		if (NULL != TTA)
+		if (nullptr != TTA)
 		{
 			reinterpret_cast<tta::tta_decoder*>(TTA)->~tta_decoder();
-			TTA = NULL;
+			TTA = nullptr;
 		}
 		else
 		{
@@ -183,7 +184,7 @@ int CDecodeFile::SetFileName(const wchar_t *filename)
 		::CloseHandle(decoderFileHANDLE);
 		decoderFileHANDLE = INVALID_HANDLE_VALUE;
 		::LeaveCriticalSection(&CriticalSection);
-		throw CDecodeFile_exception(ex.code());
+		throw DecodeFile_exception(ex.code());
 	}
 
 	paused = 0;
@@ -208,7 +209,7 @@ int CDecodeFile::SetFileName(const wchar_t *filename)
 	return TTA_NO_ERROR;
 }
 
-long double CDecodeFile::SeekPosition(int *done)
+long double DecodeFile::SeekPosition(int *done)
 {
 
 	::EnterCriticalSection(&CriticalSection);
@@ -226,7 +227,7 @@ long double CDecodeFile::SeekPosition(int *done)
 		seek_needed = -1;
 	}
 
-	if (NULL == TTA)
+	if (nullptr == TTA)
 	{
 		::LeaveCriticalSection(&CriticalSection);
 		return (double)0;
@@ -244,7 +245,7 @@ long double CDecodeFile::SeekPosition(int *done)
 	catch (tta::tta_exception &ex)
 	{
 		::LeaveCriticalSection(&CriticalSection);
-		throw CDecodeFile_exception(ex.code());
+		throw DecodeFile_exception(ex.code());
 	}
 
 	::LeaveCriticalSection(&CriticalSection);
@@ -252,13 +253,13 @@ long double CDecodeFile::SeekPosition(int *done)
 	return decode_pos_ms;
 }
 
-int  CDecodeFile::GetSamples(BYTE *buffer, size_t buffersize, int *current_bitrate)
+int  DecodeFile::GetSamples(BYTE *buffer, size_t buffersize, int *current_bitrate)
 {
 	int skip_len = 0;
 	int len = 0;
 
 
-	if (INVALID_HANDLE_VALUE == decoderFileHANDLE || NULL == buffer || 0 == buffersize)
+	if (INVALID_HANDLE_VALUE == decoderFileHANDLE || nullptr == buffer || 0 == buffersize)
 	{
 		return 0; // no decode data
 	}
@@ -269,9 +270,9 @@ int  CDecodeFile::GetSamples(BYTE *buffer, size_t buffersize, int *current_bitra
 
 	::EnterCriticalSection(&CriticalSection);
 
-	if (NULL == TTA)
+	if (nullptr == TTA)
 	{
-		throw CDecodeFile_exception(TTA_MEMORY_ERROR);
+		throw DecodeFile_exception(TTA_MEMORY_ERROR);
 	}
 	else
 	{
@@ -285,14 +286,14 @@ int  CDecodeFile::GetSamples(BYTE *buffer, size_t buffersize, int *current_bitra
 
 	catch (tta::tta_exception &ex)
 	{
-		throw CDecodeFile_exception(ex.code());
+		throw DecodeFile_exception(ex.code());
 	}
 
 	if (len != 0)
 	{
 		skip_len += len;
 		decode_pos_ms += (__int32)(skip_len * 1000. / tta_info.sps);
-		*current_bitrate = TTA->get_rate();
+		*current_bitrate = (int) TTA->get_rate();
 	}
 	else
 	{
@@ -305,13 +306,13 @@ int  CDecodeFile::GetSamples(BYTE *buffer, size_t buffersize, int *current_bitra
 
 }
 
-void CDecodeFile::SetOutputBPS(unsigned long bps)
+void DecodeFile::SetOutputBPS(unsigned long bps)
 {
 	::EnterCriticalSection(&CriticalSection);
 
-	if (NULL == TTA)
+	if (nullptr == TTA)
 	{
-		throw CDecodeFile_exception(TTA_MEMORY_ERROR);
+		throw DecodeFile_exception(TTA_MEMORY_ERROR);
 	}
 	else
 	{
@@ -326,7 +327,7 @@ void CDecodeFile::SetOutputBPS(unsigned long bps)
 
 	catch (tta::tta_exception &ex)
 	{
-		throw CDecodeFile_exception(ex.code());
+		throw DecodeFile_exception(ex.code());
 	}
 
 	::LeaveCriticalSection(&CriticalSection);

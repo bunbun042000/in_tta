@@ -1,6 +1,6 @@
 /*
 The ttaplugin-winamp project.
-Copyright (C) 2005-2025 Yamagata Fumihiro
+Copyright (C) 2005-2026 Yamagata Fumihiro
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -17,26 +17,30 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <Wasabi/api/service/api_service.h>
 #include <Agave/Config/api_config.h>
+#include <Agave/AlbumArt/svc_albumArtProvider.h>
+#include <Wasabi/api/service/api_service.h>
+#include <Wasabi/api/service/waservicefactory.h>
 #include <Wasabi/api/memmgr/api_memmgr.h>
+#include <Wasabi/bfc/dispatch.h>
 #include <Winamp/in2.h>
 #include <Winamp/wa_ipc.h>
-#include <Wasabi/api/service/waservicefactory.h>
-#include <Agave/AlbumArt/svc_albumArtProvider.h>
-#include "AlbumArt.h"
+
 #include <taglib/trueaudiofile.h>
 #include <taglib/id3v2tag.h>
 #include <taglib/attachedpictureframe.h>
 #include <taglib/tag.h>
 
-#include "MediaLibrary.h"
+#include "AlbumArt.h"
+#include "ID3v2TagExtension.h"
 
-static const int MIME_LENGTH = 64;
+//static const int MIME_LENGTH = 64;
 
 class AlbumArtFactory : public waServiceFactory
 {
 public:
+	virtual ~AlbumArtFactory();
+
 	FOURCC GetServiceType();
 	const char *GetServiceName();
 	GUID GetGUID();
@@ -264,10 +268,10 @@ static const wchar_t *extensionW(const wchar_t *fn)
 
 bool TTA_AlbumArtProvider::IsMine(const wchar_t *filename)
 {
-	const wchar_t *extension = extensionW(filename);
-	if (extension && *extension)
+
+	if (extensionW(filename))
 	{
-		return ((_wcsicmp(extension, L"tta") == 0) || (_wcsicmp(extension, L"TTA") == 0)) ? true : false;
+		return ((_wcsicmp(extensionW(filename), L"tta") == 0) || (_wcsicmp(extensionW(filename), L"TTA") == 0)) ? true : false;
 	}
 	else
 	{
@@ -284,7 +288,6 @@ int TTA_AlbumArtProvider::ProviderType()
 int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t *type, void **bits, size_t *len, wchar_t **mime_type)
 {
 
-	size_t tag_size = 0;
 	int retval = ALBUMARTPROVIDER_FAILURE;
 	size_t string_len = 0;
 	TagLib::String mimeType;
@@ -329,8 +332,8 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 		}
 
 		// read Album Art
-		AlbumArt =
-			TagFile.ID3v2Tag()->albumArt(TagLib::ID3v2::AttachedPictureFrame::FrontCover, mimeType);
+		ID3v2TagExtension* Tag_ex = static_cast<ID3v2TagExtension*>(TagFile.ID3v2Tag());
+		AlbumArt = Tag_ex->albumArt(TagLib::ID3v2::AttachedPictureFrame::FrontCover, mimeType);
 		extension = mimeType.substr(mimeType.find("/") + 1);
 	}
 	else
@@ -419,7 +422,6 @@ int TTA_AlbumArtProvider::SetAlbumArtData(const wchar_t *filename, const wchar_t
 	TagLib::String mimeType(L"");
 	unsigned int size = 0;
 	TagLib::ID3v2::AttachedPictureFrame::Type artType = TagLib::ID3v2::AttachedPictureFrame::Other;
-	size_t string_len = 0;
 
 	::EnterCriticalSection(&CriticalSection);
 
@@ -428,10 +430,6 @@ int TTA_AlbumArtProvider::SetAlbumArtData(const wchar_t *filename, const wchar_t
 		::LeaveCriticalSection(&CriticalSection);
 		return retval;
 	}
-
-	size_t convertedChars = 0;
-
-	TagLib::ByteVector AlbumArt;
 
 	if (!bits)
 	{
@@ -453,12 +451,13 @@ int TTA_AlbumArtProvider::SetAlbumArtData(const wchar_t *filename, const wchar_t
 		AlbumArt.setData((const char *)bits, size);
 	}
 
-	TagLib::TrueAudio::File TTAFile(filename);
+	TagLib::TrueAudio::File TagFile(filename);
 
-	if (TTAFile.isValid())
+	if (TagFile.isValid())
 	{
-		TTAFile.ID3v2Tag()->setAlbumArt(AlbumArt, artType, mimeType);
-		TTAFile.save();
+		ID3v2TagExtension* Tag_ex = static_cast<ID3v2TagExtension*>(TagFile.ID3v2Tag());
+		Tag_ex->setAlbumArt(AlbumArt, artType, mimeType);
+		TagFile.save();
 		isSucceed = false;
 		retval = ALBUMARTPROVIDER_SUCCESS;
 	}
@@ -492,6 +491,10 @@ static TTA_AlbumArtProvider albumArtProvider;
 static const GUID TTA_albumArtproviderGUID =
 { 0xbb653840, 0x6dab, 0x4867, { 0x9f, 0x42, 0xa7, 0x72, 0xe4, 0x05, 0x8c, 0x81 } };
 
+
+AlbumArtFactory::~AlbumArtFactory()
+{
+}
 
 FOURCC AlbumArtFactory::GetServiceType()
 {

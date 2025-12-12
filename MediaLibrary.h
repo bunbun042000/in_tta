@@ -1,6 +1,6 @@
 /*
 The ttaplugins-winamp project.
-Copyright (C) 2005-2025 Yamagata Fumihiro
+Copyright (C) 2005-2026 Yamagata Fumihiro
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -50,22 +50,21 @@ struct TagInfo
 	std::wstring    bitrate;
 };
 
-class CMediaLibrary
+class MediaLibrary
 {
 public:
-	CMediaLibrary();
-	virtual ~CMediaLibrary();
+	MediaLibrary();
+	virtual ~MediaLibrary();
 	__int32  GetExtendedFileInfo(const wchar_t *fn, const wchar_t *Metadata, wchar_t *dest, size_t destlen);
 	__int32  SetExtendedFileInfo(const wchar_t *fn, const wchar_t *Metadata, const wchar_t *val);
 	__int32  WriteExtendedFileInfo();
 	void FlushCache(void);
 	std::wstring GetCurrentFileName() { return FileName; };
-	bool	isValid() { return isValidFile; };
+	bool	isValid() const { return isValidFile; };
 
 private:
-
 	CRITICAL_SECTION	CriticalSection;
-	TagInfo				TagDataW;
+	TagInfo				TagDataW {};
 	DWORD				GetTagTime;
 	std::wstring		FileName;
 	bool				isValidFile;

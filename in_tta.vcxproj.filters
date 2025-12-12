@@ -13,6 +13,9 @@
     <ClCompile Include="DecodeFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ID3v2TagExtension.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AlbumArt.h">
@@ -28,6 +31,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DecodeFile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ID3v2TagExtension.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

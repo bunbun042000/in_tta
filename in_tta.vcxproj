@@ -71,8 +71,10 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <TreatWarningAsError>false</TreatWarningAsError>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <UseDynamicDebugging>false</UseDynamicDebugging>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -123,7 +125,7 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <StructMemberAlignment>Default</StructMemberAlignment>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -131,6 +133,7 @@
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <FloatingPointModel>Precise</FloatingPointModel>
       <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)libraries\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -160,6 +163,7 @@
     <ClCompile Include="DecodeFile.cpp" />
     <ClCompile Include="in_tta.cpp" />
     <ClCompile Include="MediaLibrary.cpp" />
+    <ClCompile Include="ID3v2TagExtension.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AlbumArt.h" />
@@ -167,6 +171,7 @@
     <ClInclude Include="in_tta.h" />
     <ClInclude Include="MediaLibrary.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="ID3v2TagExtension.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="in_tta.rc" />

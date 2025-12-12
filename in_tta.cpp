@@ -50,21 +50,20 @@
 
 const static int MAX_MESSAGE_LENGTH = 1024;
 const static __int32 PLAYING_BUFFER_LENGTH = 576;
-const static __int32 TRANSCODING_BUFFER_LENGTH = 5120;
 
 // for playing static variables
-static __declspec(align(16)) CDecodeFile playing_ttafile;
+static alignas(16) DecodeFile playing_ttafile;
 
 static HANDLE decoder_handle = INVALID_HANDLE_VALUE;
 static DWORD WINAPI __stdcall DecoderThread(void *p);
 static volatile int killDecoderThread = 0;
 
 // for transcoding static variable
-static __declspec(align(16)) CDecodeFile transcode_ttafile;
+static alignas(16) DecodeFile transcode_ttafile;
 
 // for MetaData static variables
-CMediaLibrary m_ReadTag;
-CMediaLibrary m_WriteTag;
+MediaLibrary m_ReadTag;
+MediaLibrary m_WriteTag;
 
 void config(HWND hwndParent);
 void about(HWND hwndParent);
@@ -273,14 +272,14 @@ int play(const wchar_t *filename)
 		return_number = playing_ttafile.SetFileName(filename);
 	}
 
-	catch (CDecodeFile_exception &ex)
+	catch (DecodeFile_exception &ex)
 	{
 		tta_error_message(ex.code(), filename);
 		return -1;
 	}
 
 	maxlatency = mod.outMod->Open(playing_ttafile.GetSampleRate(),
-		playing_ttafile.GetNumberofChannel(), playing_ttafile.GetOutputBPS(), -1, -1);
+		playing_ttafile.GetNumberofChannel(), (int)playing_ttafile.GetOutputBPS(), -1, -1);
 	if (maxlatency < 0)
 	{
 		stop();
@@ -509,7 +508,7 @@ DWORD WINAPI __stdcall DecoderThread(void *p)
 			{
 				decoded_samples = playing_ttafile.GetSamples(pcm_buffer, PLAYING_BUFFER_SIZE, &bitrate);
 			}
-			catch (CDecodeFile_exception &ex)
+			catch (DecodeFile_exception &ex)
 			{
 				tta_error_message(ex.code(), playing_ttafile.GetFileName());
 				PostMessage(mod.hMainWindow, WM_WA_MPEG_EOF, 0, 0);
@@ -525,10 +524,10 @@ DWORD WINAPI __stdcall DecoderThread(void *p)
 			}
 			else
 			{
-				do_vis(pcm_buffer, decoded_samples, playing_ttafile.GetOutputBPS(), playing_ttafile.GetDecodePosMs());
+				do_vis(pcm_buffer, decoded_samples, (int)playing_ttafile.GetOutputBPS(), playing_ttafile.GetDecodePosMs());
 				if (mod.dsp_isactive())
 				{
-					decoded_samples = mod.dsp_dosamples(reinterpret_cast<short*>(pcm_buffer), decoded_samples, playing_ttafile.GetOutputBPS(),
+					decoded_samples = mod.dsp_dosamples(reinterpret_cast<short*>(pcm_buffer), decoded_samples, (int)playing_ttafile.GetOutputBPS(),
 						playing_ttafile.GetNumberofChannel(), playing_ttafile.GetSampleRate());
 				}
 				else
@@ -536,7 +535,7 @@ DWORD WINAPI __stdcall DecoderThread(void *p)
 					// Do nothing
 				}
 				mod.outMod->Write(reinterpret_cast<char *>(pcm_buffer), decoded_samples * playing_ttafile.GetNumberofChannel()
-					* (playing_ttafile.GetOutputBPS() >> 3));
+					* (int)(playing_ttafile.GetOutputBPS() >> 3));
 			}
 
 			mod.SetInfo(bitrate, playing_ttafile.GetSampleRate() / 1000, playing_ttafile.GetNumberofChannel(), 1);
@@ -607,7 +606,7 @@ extern "C"
 		winampGetExtendedRead_openW(const wchar_t *filename, int *size, int *bps, int *nch, int *srate)
 	{
 
-		CDecodeFile *dec = &transcode_ttafile;
+		DecodeFile *dec = &transcode_ttafile;
 		if (!dec->isValid())
 		{
 			return (intptr_t)0;
@@ -622,7 +621,7 @@ extern "C"
 			dec->SetFileName(filename);
 		}
 
-		catch (CDecodeFile_exception &ex)
+		catch (DecodeFile_exception &ex)
 		{
 			tta_error_message(ex.code(), filename);
 			return (intptr_t)0;
@@ -638,9 +637,8 @@ extern "C"
 
 	__declspec(dllexport) intptr_t __cdecl winampGetExtendedRead_getData(intptr_t handle, char *dest, int len, int *killswitch)
 	{
-		CDecodeFile *dec = &transcode_ttafile;
+		DecodeFile *dec = &transcode_ttafile;
 		int dest_used = 0;
-		int n = 0;
 		int bitrate;
 		int32_t decoded_samples = 0;
 		int32_t decoded_bytes = 0;
@@ -656,9 +654,9 @@ extern "C"
 
 		try
 		{
-			decoded_samples = dec->GetSamples((BYTE *)dest, len, &bitrate);
+			decoded_samples = dec->GetSamples((BYTE *)dest, (size_t)len, &bitrate);
 		}
-		catch (CDecodeFile_exception &ex)
+		catch (DecodeFile_exception &ex)
 		{
 			tta_error_message(ex.code(), dec->GetFileName());
 			dest_used = -1;
@@ -681,8 +679,8 @@ extern "C"
 	__declspec(dllexport) int __cdecl winampGetExtendedRead_setTime(intptr_t handle, int millisecs)
 	{
 		int done = 0;
-		CDecodeFile *dec = &transcode_ttafile;
-		if (NULL != dec && dec->isValid() && dec->isDecodable())
+		DecodeFile *dec = &transcode_ttafile;
+		if (nullptr != dec && dec->isValid() && dec->isDecodable())
 		{
 			dec->SetSeekNeeded(millisecs);
 			dec->SeekPosition(&done);
