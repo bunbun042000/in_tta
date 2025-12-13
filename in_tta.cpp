@@ -45,7 +45,7 @@
 #include <taglib/tstring.h>
 
 #include "DecodeFile.h"
-#include "..\common\VersionNo.h"
+#include "VersionNo.h"
 #include "resource.h"
 
 const static int MAX_MESSAGE_LENGTH = 1024;
