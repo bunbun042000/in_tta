@@ -12,7 +12,7 @@
 
  /*
  The ttaplugin-winamp project.
- Copyright (C) 2005-2025 Yamagata Fumihiro
+ Copyright (C) 2005-2026 Yamagata Fumihiro
 
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -91,8 +91,8 @@ In_Module mod =
 {
 	IN_VER,
 	description,
-	NULL,		// hMainWindow
-	NULL,		// hDllInstance
+	nullptr,		// hMainWindow
+	nullptr,		// hDllInstance
 	FileExtensions,
 	1,			// is_seekable
 	1,			// uses output
@@ -113,11 +113,11 @@ In_Module mod =
 	setoutputtime,
 	setvolume,
 	setpan,
-	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, // vis stuff
-	NULL, NULL,	// dsp
+	nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, // vis stuff
+	nullptr, nullptr,	// dsp
 	eq_set,
-	NULL,		// setinfo
-	NULL		// out_mod
+	nullptr,		// setinfo
+	nullptr		// out_mod
 };
 
 static void tta_error_message(int error, const wchar_t *filename)
