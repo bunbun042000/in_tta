@@ -61,7 +61,7 @@ public:
 	DecodeFile(void);
 	virtual ~DecodeFile(void);
 
-	bool			isValid() { return sig_number == signature ? true : false; }
+	bool			isValid() const { return sig_number == signature ? true : false; }
 	bool			isDecodable() const { return decoderFileHANDLE != INVALID_HANDLE_VALUE ? true : false; }
 
 	int				SetFileName(const wchar_t *filename);
