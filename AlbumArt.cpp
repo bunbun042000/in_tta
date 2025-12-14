@@ -34,8 +34,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "AlbumArt.h"
 #include "ID3v2TagExtension.h"
 
-//static const int MIME_LENGTH = 64;
-
 class AlbumArtFactory : public waServiceFactory
 {
 public:
@@ -72,6 +70,10 @@ void Wasabi_Init()
 	{
 		WASABI_API_SVC = 0;
 		return;
+	}
+	else
+	{
+		// Do nothing
 	}
 
 	WASABI_API_SVC->service_register(&albumArtFactory);
@@ -301,7 +303,7 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 	}
 	else
 	{
-		// do nothing
+		// Do nothing
 	}
 
 	if (!bits || !len || !mime_type)
@@ -311,7 +313,7 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 	}
 	else
 	{
-		// do nothing
+		// Do nothing
 	}
 
 	if (!isSucceed || _wcsicmp(FileName.c_str(), filename))
@@ -352,7 +354,7 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 		}
 		else
 		{
-			// do nothing
+			// Do nothing
 		}
 
 		errno_t err = memcpy_s(*bits, AlbumArt.size(), AlbumArt.data(), AlbumArt.size());
@@ -363,7 +365,7 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 		}
 		else
 		{
-			// do nothing
+			// Do nothing
 		}
 
 		*mime_type = (wchar_t *)Wasabi_Malloc(extension.size() * 2 + 2);
@@ -375,7 +377,7 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 			}
 			else
 			{
-				// do nothing
+				// Do nothing
 			}
 			::LeaveCriticalSection(&CriticalSection);
 			return retval;
@@ -394,7 +396,7 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 			}
 			else
 			{
-				// do nothing
+				// Do nothing
 			}
 			if (NULL != *mime_type)
 			{
@@ -402,13 +404,17 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 			}
 			else
 			{
-				// do nothing
+				// Do nothing
 			}
+		}
+		else
+		{
+			// Do nothing
 		}
 	}
 	else
 	{
-		// do nothing
+		// Do nothing
 	}
 
 	::LeaveCriticalSection(&CriticalSection);

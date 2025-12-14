@@ -239,6 +239,7 @@ void ID3v2TagExtension::setAlbumArt(const TagLib::ByteVector& v, TagLib::ID3v2::
 		{
 			// Do nothing
 		}
+
 		TagLib::ID3v2::AttachedPictureFrame* f = new TagLib::ID3v2::AttachedPictureFrame("APIC");
 		f->setMimeType(mimetype);
 		f->setType(arttype);

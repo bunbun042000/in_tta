@@ -17,10 +17,9 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#if !defined(AFX_MediaLibrary_H__997DC726_50DB_46B4_A156_DB5E92EC2BE8__INCLUDED_)
-#define AFX_MediaLibrary_H__997DC726_50DB_46B4_A156_DB5E92EC2BE8__INCLUDED_
+#pragma once
 
-#include "..\Winamp SDK\Winamp\wa_ipc.h"
+#include <Winamp/wa_ipc.h>
 
 #include <taglib/tstring.h>
 #include <taglib/trueaudiofile.h>
@@ -72,6 +71,3 @@ private:
 	bool GetTagInfo(const std::wstring fn);
 
 };
-
-
-#endif // !defined(AFX_MediaLibrary_H__997DC726_50DB_46B4_A156_DB5E92EC2BE8__INCLUDED_)

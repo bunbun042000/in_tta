@@ -17,8 +17,7 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef DECODEFILE_H
-#define DECODEFILE_H
+#pragma once
 
 #include "libtta.h"
 #include "in_tta.h"
@@ -96,5 +95,3 @@ public:
 	DecodeFile_exception(tta_error code) : err_code(code) {}
 	tta_error code() const { return err_code; }
 }; // class tta_exception
-
-#endif
