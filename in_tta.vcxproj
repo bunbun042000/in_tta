@@ -182,6 +182,11 @@
   <ItemGroup>
     <None Include="info.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\libtta-cpp\libtta.vcxproj">
+      <Project>{b3df599c-1c8f-451d-91e4-dd766210da1f}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
