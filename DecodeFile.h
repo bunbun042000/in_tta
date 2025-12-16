@@ -18,7 +18,8 @@ You should have received a copy of the GNU General Public License along with enc
 If not, see <https://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#ifndef DECODEFILE_H
+#define DECODEFILE_H
 
 #include "libtta.h"
 #include "in_tta.h"
@@ -96,3 +97,5 @@ public:
 	DecodeFile_exception(tta_error code) : err_code(code) {}
 	tta_error code() const { return err_code; }
 }; // class tta_exception
+
+#endif // #ifndef DECODEFILE_H

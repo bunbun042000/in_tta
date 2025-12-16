@@ -18,7 +18,8 @@ You should have received a copy of the GNU General Public License along with enc
 If not, see <https://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#ifndef ID3V2TAGEXTENSION_H_INCLUDED
+#define ID3V2TAGEXTENSION_H_INCLUDED
 
 #include <taglib/tag.h>
 #include <taglib/id3v2tag.h>
@@ -70,3 +71,5 @@ private:
     TagLib::String getTextFrame(const TagLib::ByteVector& id) const;
 
 };
+
+#endif // #ifndef ID3V2TAGEXTENSION_H_INCLUDED

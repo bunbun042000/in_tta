@@ -18,9 +18,12 @@ You should have received a copy of the GNU General Public License along with enc
 If not, see <https://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#ifndef ALBUMART_H
+#define ALBUMART_H
 
 void Wasabi_Init();
 void Wasabi_Quit();
 void *Wasabi_Malloc(size_t size_in_bytes);
 void Wasabi_Free(void *memory_block);
+
+#endif // #ifndef ALBUMART_H

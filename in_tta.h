@@ -18,6 +18,9 @@ You should have received a copy of the GNU General Public License along with enc
 If not, see <https://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#ifndef IN_TTA_INCLUDED
+#define IN_TTA_INCLUDED
+
 #define UNICODE_INPUT_PLUGIN
 
+#endif // #ifndef IN_TTA_INCLUDED
