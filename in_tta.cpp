@@ -613,7 +613,7 @@ extern "C"
 		DecodeFile *dec = &transcode_ttafile;
 		if (!dec->isValid())
 		{
-			return (intptr_t)0;
+			return static_cast<intptr_t>(0);
 		}
 		else
 		{
@@ -628,7 +628,7 @@ extern "C"
 		catch (DecodeFile_exception &ex)
 		{
 			tta_error_message(ex.code(), filename);
-			return (intptr_t)0;
+			return static_cast<intptr_t>(0);
 		}
 
 		*bps = dec->GetBitsperSample();
@@ -636,7 +636,7 @@ extern "C"
 		*srate = dec->GetSampleRate();
 		*size = dec->GetDataLength() * (*bps / 8) * (*nch);
 
-		return (intptr_t)dec;
+		return reinterpret_cast<intptr_t>(dec);
 	}
 
 	__declspec(dllexport) intptr_t __cdecl winampGetExtendedRead_getData(intptr_t handle, char *dest, int len, int *killswitch)
@@ -649,7 +649,7 @@ extern "C"
 
 		if (!dec->isDecodable())
 		{
-			return (intptr_t)-1;
+			return static_cast<intptr_t>(-1);
 		}
 		else
 		{
@@ -676,7 +676,7 @@ extern "C"
 		}
 
 
-		return (intptr_t)decoded_bytes;
+		return static_cast<intptr_t>(decoded_bytes);
 	}
 
 	// return nonzero on success, zero on failure

@@ -65,9 +65,9 @@ static AlbumArtFactory albumArtFactory;
 
 void Wasabi_Init()
 {
-	WASABI_API_SVC = (api_service *)SendMessage(mod.hMainWindow, WM_WA_IPC, 0, IPC_GET_API_SERVICE);
+	WASABI_API_SVC = reinterpret_cast<api_service *>(SendMessage(mod.hMainWindow, WM_WA_IPC, 0, IPC_GET_API_SERVICE));
 
-	if (WASABI_API_SVC == 0 || WASABI_API_SVC == (api_service *)1)
+	if (WASABI_API_SVC == 0 || WASABI_API_SVC == reinterpret_cast<api_service *>(1))
 	{
 		WASABI_API_SVC = 0;
 		return;
@@ -79,7 +79,7 @@ void Wasabi_Init()
 
 	WASABI_API_SVC->service_register(&albumArtFactory);
 
-	waServiceFactory *sf = (waServiceFactory *)WASABI_API_SVC->service_getServiceByGuid(AgaveConfigGUID);
+	waServiceFactory *sf = WASABI_API_SVC->service_getServiceByGuid(AgaveConfigGUID);
 
 	if (sf)
 	{
@@ -90,7 +90,7 @@ void Wasabi_Init()
 		// Do nothing
 	}
 
-	sf = (waServiceFactory *)WASABI_API_SVC->service_getServiceByGuid(memMgrApiServiceGuid);
+	sf = WASABI_API_SVC->service_getServiceByGuid(memMgrApiServiceGuid);
 
 	if (sf)
 	{
@@ -106,7 +106,7 @@ void Wasabi_Quit()
 {
 	if (WASABI_API_SVC)
 	{
-		waServiceFactory *sf = (waServiceFactory *)WASABI_API_SVC->service_getServiceByGuid(AgaveConfigGUID);
+		waServiceFactory *sf = WASABI_API_SVC->service_getServiceByGuid(AgaveConfigGUID);
 		if (sf)
 		{
 			sf->releaseInterface(AGAVE_API_CONFIG);
@@ -116,7 +116,7 @@ void Wasabi_Quit()
 			// Do nothing
 		}
 
-		sf = (waServiceFactory *)WASABI_API_SVC->service_getServiceByGuid(memMgrApiServiceGuid);
+		sf = WASABI_API_SVC->service_getServiceByGuid(memMgrApiServiceGuid);
 		if (sf)
 		{
 			sf->releaseInterface(WASABI_API_MEMMGR);
@@ -347,8 +347,8 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 	if (!m_AlbumArt.isEmpty())
 	{
 		*len = m_AlbumArt.size();
-		*bits = (char *)Wasabi_Malloc(*len);
-		if (NULL == *bits)
+		*bits = static_cast<char *>(Wasabi_Malloc(*len));
+		if (nullptr == *bits)
 		{
 			::LeaveCriticalSection(&m_CriticalSection);
 			return retval;
@@ -369,10 +369,10 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 			// Do nothing
 		}
 
-		*mime_type = (wchar_t *)Wasabi_Malloc(m_extension.size() * 2 + 2);
-		if (NULL == *mime_type)
+		*mime_type = static_cast<wchar_t *>(Wasabi_Malloc(m_extension.size() * 2 + 2));
+		if (nullptr == *mime_type)
 		{
-			if (NULL != *bits)
+			if (nullptr != *bits)
 			{
 				Wasabi_Free(*bits);
 			}
@@ -391,7 +391,7 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 
 		if (retval)
 		{
-			if (NULL != *bits)
+			if (nullptr != *bits)
 			{
 				Wasabi_Free(*bits);
 			}
@@ -399,7 +399,7 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 			{
 				// Do nothing
 			}
-			if (NULL != *mime_type)
+			if (nullptr != *mime_type)
 			{
 				Wasabi_Free(*mime_type);
 			}
@@ -479,7 +479,7 @@ int TTA_AlbumArtProvider::SetAlbumArtData(const wchar_t *filename, const wchar_t
 
 int TTA_AlbumArtProvider::DeleteAlbumArt(const wchar_t *filename, const wchar_t *type)
 {
-	return SetAlbumArtData(filename, type, NULL, 0, L"jpeg");
+	return SetAlbumArtData(filename, type, nullptr, 0, L"jpeg");
 }
 
 #define CBCLASS TTA_AlbumArtProvider

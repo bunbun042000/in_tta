@@ -23,7 +23,7 @@ If not, see <https://www.gnu.org/licenses/>.
 
 TTAint32 CALLBACK read_callback(TTA_io_callback *io, TTAuint8 *buffer, TTAuint32 size)
 {
-	TTA_io_callback_wrapper *iocb = (TTA_io_callback_wrapper *)io;
+	TTA_io_callback_wrapper *iocb = reinterpret_cast<TTA_io_callback_wrapper *>(io);
 	TTAint32 result = 1;
 
 	if (::ReadFile(iocb->handle, buffer, size, (LPDWORD)&result, nullptr))
@@ -40,7 +40,7 @@ TTAint32 CALLBACK read_callback(TTA_io_callback *io, TTAuint8 *buffer, TTAuint32
 
 TTAint32 CALLBACK write_callback(TTA_io_callback *io, TTAuint8 *buffer, TTAuint32 size)
 {
-	TTA_io_callback_wrapper *iocb = (TTA_io_callback_wrapper *)io;
+	TTA_io_callback_wrapper *iocb = reinterpret_cast<TTA_io_callback_wrapper *>(io);
 	TTAint32 result = 1;
 
 	if (::WriteFile(iocb->handle, buffer, size, (LPDWORD)&result, nullptr))
@@ -57,11 +57,11 @@ TTAint32 CALLBACK write_callback(TTA_io_callback *io, TTAuint8 *buffer, TTAuint3
 
 TTAint64 CALLBACK seek_callback(TTA_io_callback *io, TTAint64 offset)
 {
-	TTA_io_callback_wrapper *iocb = (TTA_io_callback_wrapper *)io;
+	TTA_io_callback_wrapper *iocb = reinterpret_cast<TTA_io_callback_wrapper *>(io);
 	return ::SetFilePointer(iocb->handle, (LONG)offset, nullptr, FILE_BEGIN);
 } // seek_callback
 
-DecodeFile::DecodeFile(void) : m_FileName(L""), m_paused(0), m_seek_needed(1), m_decode_pos_ms(0), m_bitrate(0), m_Filesize(0),
+DecodeFile::DecodeFile() : m_FileName(L""), m_paused(0), m_seek_needed(1), m_decode_pos_ms(0), m_bitrate(0), m_Filesize(0),
 m_st_state(0), m_decoderFileHANDLE(INVALID_HANDLE_VALUE), m_iocb_wrapper{}, m_ttadec_mem{}, m_TTA(nullptr), m_tta_info{}, m_signature(m_sig_number)
 {
 
@@ -73,7 +73,7 @@ m_st_state(0), m_decoderFileHANDLE(INVALID_HANDLE_VALUE), m_iocb_wrapper{}, m_tt
 	::InitializeCriticalSection(&m_CriticalSection);
 }
 
-DecodeFile::~DecodeFile(void)
+DecodeFile::~DecodeFile()
 {
 	::EnterCriticalSection(&m_CriticalSection);
 
@@ -163,7 +163,7 @@ int DecodeFile::SetFileName(const wchar_t *filename)
 
 	try 
 	{
-		m_TTA = new (&m_ttadec_mem) tta::tta_decoder((TTA_io_callback *)&m_iocb_wrapper);
+		m_TTA = new (&m_ttadec_mem) tta::tta_decoder(reinterpret_cast<TTA_io_callback *>(& m_iocb_wrapper));
 		m_TTA->init_get_info(&m_tta_info, 0);
 	}
 
@@ -237,7 +237,7 @@ long double DecodeFile::SeekPosition(int *done)
 
 	try
 	{
-		m_TTA->set_position((TTAuint32)(m_decode_pos_ms / 1000.), &new_pos);
+		m_TTA->set_position(static_cast<TTAuint32>(m_decode_pos_ms / 1000.), &new_pos);
 	}
 
 	catch (tta::tta_exception &ex)
@@ -290,8 +290,8 @@ int  DecodeFile::GetSamples(BYTE *buffer, size_t buffersize, int *current_bitrat
 	if (len != 0)
 	{
 		skip_len += len;
-		m_decode_pos_ms += (__int32)(skip_len * 1000. / m_tta_info.sps);
-		*current_bitrate = (int) m_TTA->get_rate();
+		m_decode_pos_ms += static_cast<__int32>(skip_len * 1000. / m_tta_info.sps);
+		*current_bitrate = static_cast<int>(m_TTA->get_rate());
 	}
 	else
 	{

@@ -54,7 +54,7 @@ MediaLibrary::~MediaLibrary()
 
 }
 
-void MediaLibrary::FlushCache(void)
+void MediaLibrary::FlushCache()
 {
 	::EnterCriticalSection(&m_CriticalSection);
 
@@ -134,7 +134,7 @@ bool MediaLibrary::GetTagInfo(const std::wstring fn)
 			<< L")\nLength\t\t: " << second.str();
 		m_TagDataW.Format = ttainfo_temp.str();
 
-		m_TagDataW.bitrate = std::to_wstring((long long)TTAFile.audioProperties()->bitrate());
+		m_TagDataW.bitrate = std::to_wstring(static_cast<long long>(TTAFile.audioProperties()->bitrate()));
 
 		if (nullptr != TTAFile.ID3v2Tag())
 		{

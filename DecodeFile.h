@@ -59,8 +59,8 @@ private:
 	CRITICAL_SECTION		m_CriticalSection;
 
 public:
-	DecodeFile(void);
-	virtual ~DecodeFile(void);
+	DecodeFile();
+	virtual ~DecodeFile();
 
 	bool			isValid() const { return m_sig_number == m_signature ? true : false; }
 	bool			isDecodable() const { return m_decoderFileHANDLE != INVALID_HANDLE_VALUE ? true : false; }
@@ -75,15 +75,15 @@ public:
 	long double		SeekPosition(int *done);
 	void			SetSeekNeeded(int sn) { m_seek_needed = sn; }
 	int				GetSeekNeeded() const{ return m_seek_needed; }
-	int				GetSampleRate() const{ return (int)m_tta_info.sps; }
-	int				GetBitrate() const{ return (int)(m_bitrate); }
-	__int32			GetNumberofChannel() const{ return (__int32)m_tta_info.nch; }
-	__int32			GetLengthbymsec() const{ return (__int32)(m_tta_info.samples / m_tta_info.sps * 1000); }
-	int				GetDataLength() const{ return (int)m_tta_info.samples; }
-	TTAuint8		GetByteSize() const{ return TTAuint8(m_tta_info.bps / 8); }
+	int				GetSampleRate() const{ return static_cast<int>(m_tta_info.sps); }
+	int				GetBitrate() const{ return static_cast<int>(m_bitrate); }
+	__int32			GetNumberofChannel() const{ return static_cast<__int32>(m_tta_info.nch); }
+	__int32			GetLengthbymsec() const{ return static_cast<__int32>(m_tta_info.samples / m_tta_info.sps * 1000); }
+	int				GetDataLength() const{ return static_cast<int>(m_tta_info.samples); }
+	TTAuint8		GetByteSize() const{ return static_cast<TTAuint8>(m_tta_info.bps / 8); }
 	unsigned __int32	GetOutputBPS() const{ return m_tta_info.bps; } 
 	void			SetOutputBPS(unsigned long bps);
-	__int32			GetBitsperSample() const{ return (__int32)m_tta_info.bps; }
+	__int32			GetBitsperSample() const{ return static_cast<__int32>(m_tta_info.bps); }
 
 };
 
