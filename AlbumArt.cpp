@@ -153,29 +153,29 @@ public:
 	int DeleteAlbumArt(const wchar_t *filename, const wchar_t *type);
 protected:
 	RECVS_DISPATCH;
-	CRITICAL_SECTION	CriticalSection;
-	std::wstring			FileName;
-	bool					isSucceed;
-	TagLib::ByteVector		AlbumArt;
-	TagLib::String			extension;
+	CRITICAL_SECTION	m_CriticalSection;
+	std::wstring			m_FileName;
+	bool					m_isSucceed;
+	TagLib::ByteVector		m_AlbumArt;
+	TagLib::String			m_extension;
 };
 
 TTA_AlbumArtProvider::TTA_AlbumArtProvider() : svc_albumArtProvider()
 {
-	::InitializeCriticalSection(&CriticalSection);
-	isSucceed = false;
-	FileName = L"";
-	AlbumArt = TagLib::ByteVector();
-	extension = TagLib::String();
+	::InitializeCriticalSection(&m_CriticalSection);
+	m_isSucceed = false;
+	m_FileName = L"";
+	m_AlbumArt = TagLib::ByteVector();
+	m_extension = TagLib::String();
 }
 
 TTA_AlbumArtProvider::~TTA_AlbumArtProvider()
 {
-	::DeleteCriticalSection(&CriticalSection);
-	isSucceed = false;
-	FileName = L"";
-	AlbumArt = TagLib::ByteVector();
-	extension = TagLib::String();
+	::DeleteCriticalSection(&m_CriticalSection);
+	m_isSucceed = false;
+	m_FileName = L"";
+	m_AlbumArt = TagLib::ByteVector();
+	m_extension = TagLib::String();
 }
 
 static const wchar_t *GetLastCharactercW(const wchar_t *string)
@@ -295,11 +295,11 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 	size_t string_len = 0;
 	TagLib::String mimeType;
 
-	::EnterCriticalSection(&CriticalSection);
+	::EnterCriticalSection(&m_CriticalSection);
 
 	if (_wcsicmp(type, L"cover"))
 	{
-		::LeaveCriticalSection(&CriticalSection);
+		::LeaveCriticalSection(&m_CriticalSection);
 		return retval;
 	}
 	else
@@ -309,7 +309,7 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 
 	if (!bits || !len || !mime_type)
 	{
-		::LeaveCriticalSection(&CriticalSection);
+		::LeaveCriticalSection(&m_CriticalSection);
 		return retval;
 	}
 	else
@@ -317,40 +317,40 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 		// Do nothing
 	}
 
-	if (!isSucceed || _wcsicmp(FileName.c_str(), filename))
+	if (!m_isSucceed || _wcsicmp(m_FileName.c_str(), filename))
 	{
-		FileName = filename;
+		m_FileName = filename;
 
-		TagLib::TrueAudio::File TagFile(FileName.c_str());
+		TagLib::TrueAudio::File TagFile(m_FileName.c_str());
 
 		if (!TagFile.isValid())
 		{
-			isSucceed = false;
-			::LeaveCriticalSection(&CriticalSection);
+			m_isSucceed = false;
+			::LeaveCriticalSection(&m_CriticalSection);
 			return retval;
 		}
 		else
 		{
-			isSucceed = true;
+			m_isSucceed = true;
 		}
 
 		// read Album Art
 		ID3v2TagExtension* Tag_ex = static_cast<ID3v2TagExtension*>(TagFile.ID3v2Tag());
-		AlbumArt = Tag_ex->albumArt(TagLib::ID3v2::AttachedPictureFrame::FrontCover, mimeType);
-		extension = mimeType.substr(mimeType.find("/") + 1);
+		m_AlbumArt = Tag_ex->albumArt(TagLib::ID3v2::AttachedPictureFrame::FrontCover, mimeType);
+		m_extension = mimeType.substr(mimeType.find("/") + 1);
 	}
 	else
 	{
 		// Do nothing
 	}
 
-	if (!AlbumArt.isEmpty())
+	if (!m_AlbumArt.isEmpty())
 	{
-		*len = AlbumArt.size();
+		*len = m_AlbumArt.size();
 		*bits = (char *)Wasabi_Malloc(*len);
 		if (NULL == *bits)
 		{
-			::LeaveCriticalSection(&CriticalSection);
+			::LeaveCriticalSection(&m_CriticalSection);
 			return retval;
 		}
 		else
@@ -358,10 +358,10 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 			// Do nothing
 		}
 
-		errno_t err = memcpy_s(*bits, AlbumArt.size(), AlbumArt.data(), AlbumArt.size());
+		errno_t err = memcpy_s(*bits, m_AlbumArt.size(), m_AlbumArt.data(), m_AlbumArt.size());
 		if (err)
 		{
-			::LeaveCriticalSection(&CriticalSection);
+			::LeaveCriticalSection(&m_CriticalSection);
 			return retval;
 		}
 		else
@@ -369,7 +369,7 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 			// Do nothing
 		}
 
-		*mime_type = (wchar_t *)Wasabi_Malloc(extension.size() * 2 + 2);
+		*mime_type = (wchar_t *)Wasabi_Malloc(m_extension.size() * 2 + 2);
 		if (NULL == *mime_type)
 		{
 			if (NULL != *bits)
@@ -380,12 +380,12 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 			{
 				// Do nothing
 			}
-			::LeaveCriticalSection(&CriticalSection);
+			::LeaveCriticalSection(&m_CriticalSection);
 			return retval;
 		}
 		else
 		{
-			mbstowcs_s(&string_len, *mime_type, extension.size() + 1, extension.toCString(), _TRUNCATE);
+			mbstowcs_s(&string_len, *mime_type, m_extension.size() + 1, m_extension.toCString(), _TRUNCATE);
 			retval = ALBUMARTPROVIDER_SUCCESS;
 		}
 
@@ -418,7 +418,7 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 		// Do nothing
 	}
 
-	::LeaveCriticalSection(&CriticalSection);
+	::LeaveCriticalSection(&m_CriticalSection);
 	return retval;
 }
 
@@ -430,23 +430,23 @@ int TTA_AlbumArtProvider::SetAlbumArtData(const wchar_t *filename, const wchar_t
 	unsigned int size = 0;
 	TagLib::ID3v2::AttachedPictureFrame::Type artType = TagLib::ID3v2::AttachedPictureFrame::Other;
 
-	::EnterCriticalSection(&CriticalSection);
+	::EnterCriticalSection(&m_CriticalSection);
 
 	if (std::wstring(filename) == L"")
 	{
-		::LeaveCriticalSection(&CriticalSection);
+		::LeaveCriticalSection(&m_CriticalSection);
 		return retval;
 	}
 
 	if (!bits)
 	{
-		//delete AlbumArt
-		AlbumArt.setData(NULL, 0);
+		//delete m_AlbumArt
+		m_AlbumArt.setData(NULL, 0);
 
 	}
 	else if (len == 0 || wcscmp(mime_type, L"") == 0)
 	{
-		::LeaveCriticalSection(&CriticalSection);
+		::LeaveCriticalSection(&m_CriticalSection);
 		return retval;
 	}
 	else
@@ -455,7 +455,7 @@ int TTA_AlbumArtProvider::SetAlbumArtData(const wchar_t *filename, const wchar_t
 		mimeType += mime_type;
 		size = len;
 		artType = TagLib::ID3v2::AttachedPictureFrame::FrontCover;
-		AlbumArt.setData((const char *)bits, size);
+		m_AlbumArt.setData((const char *)bits, size);
 	}
 
 	TagLib::TrueAudio::File TagFile(filename);
@@ -463,16 +463,16 @@ int TTA_AlbumArtProvider::SetAlbumArtData(const wchar_t *filename, const wchar_t
 	if (TagFile.isValid())
 	{
 		ID3v2TagExtension* Tag_ex = static_cast<ID3v2TagExtension*>(TagFile.ID3v2Tag());
-		Tag_ex->setAlbumArt(AlbumArt, artType, mimeType);
+		Tag_ex->setAlbumArt(m_AlbumArt, artType, mimeType);
 		TagFile.save();
-		isSucceed = false;
+		m_isSucceed = false;
 		retval = ALBUMARTPROVIDER_SUCCESS;
 	}
 	else
 	{
 		// Do nothing
 	}
-	::LeaveCriticalSection(&CriticalSection);
+	::LeaveCriticalSection(&m_CriticalSection);
 
 	return retval;
 }
