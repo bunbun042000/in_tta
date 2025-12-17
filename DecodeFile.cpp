@@ -26,7 +26,7 @@ TTAint32 CALLBACK read_callback(TTA_io_callback *io, TTAuint8 *buffer, TTAuint32
 	TTA_io_callback_wrapper *iocb = reinterpret_cast<TTA_io_callback_wrapper *>(io);
 	TTAint32 result = 1;
 
-	if (::ReadFile(iocb->handle, buffer, size, (LPDWORD)&result, nullptr))
+	if (::ReadFile(iocb->handle, buffer, size, reinterpret_cast<LPDWORD>(&result), nullptr))
 	{
 		return result;
 	}
@@ -43,7 +43,7 @@ TTAint32 CALLBACK write_callback(TTA_io_callback *io, TTAuint8 *buffer, TTAuint3
 	TTA_io_callback_wrapper *iocb = reinterpret_cast<TTA_io_callback_wrapper *>(io);
 	TTAint32 result = 1;
 
-	if (::WriteFile(iocb->handle, buffer, size, (LPDWORD)&result, nullptr))
+	if (::WriteFile(iocb->handle, buffer, size, reinterpret_cast<LPDWORD>(&result), nullptr))
 	{
 		return result;
 	}
@@ -58,7 +58,7 @@ TTAint32 CALLBACK write_callback(TTA_io_callback *io, TTAuint8 *buffer, TTAuint3
 TTAint64 CALLBACK seek_callback(TTA_io_callback *io, TTAint64 offset)
 {
 	TTA_io_callback_wrapper *iocb = reinterpret_cast<TTA_io_callback_wrapper *>(io);
-	return ::SetFilePointer(iocb->handle, (LONG)offset, nullptr, FILE_BEGIN);
+	return ::SetFilePointer(iocb->handle, static_cast<LONG>(offset), nullptr, FILE_BEGIN);
 } // seek_callback
 
 DecodeFile::DecodeFile() : m_FileName(L""), m_paused(0), m_seek_needed(1), m_decode_pos_ms(0), m_bitrate(0), m_Filesize(0),
@@ -211,7 +211,7 @@ int DecodeFile::SetFileName(const wchar_t *filename)
 
 	// m_Filesize / (total samples * number of channel) = datasize per sample [byte/sample]
 	// datasize per sample * 8 * samples per sec = m_bitrate [bit/sec]
-	m_bitrate = (long)(m_Filesize / (m_tta_info.samples * m_tta_info.nch) * 8 * m_tta_info.sps / 1000);
+	m_bitrate = static_cast<long>(m_Filesize / (m_tta_info.samples * m_tta_info.nch) * 8 * m_tta_info.sps / 1000);
 
 	if (m_TTA->seek_allowed)
 	{
@@ -248,7 +248,7 @@ long double DecodeFile::SeekPosition(int *done)
 	if (nullptr == m_TTA)
 	{
 		::LeaveCriticalSection(&m_CriticalSection);
-		return (double)0;
+		return static_cast<double>(0);
 	}
 	else
 	{
