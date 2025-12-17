@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #if !defined(AFX_MediaLibrary_H__997DC726_50DB_46B4_A156_DB5E92EC2BE8__INCLUDED_)
 #define AFX_MediaLibrary_H__997DC726_50DB_46B4_A156_DB5E92EC2BE8__INCLUDED_
 
-#include "..\Winamp SDK\Winamp\wa_ipc.h"
+#include <Winamp/wa_ipc.h>
 
 #include <taglib/tstring.h>
 #include <taglib/trueaudiofile.h>
@@ -50,25 +50,25 @@ struct TagInfo
 	std::wstring    bitrate;
 };
 
-class CMediaLibrary
+class MediaLibrary
 {
 public:
-	CMediaLibrary();
-	virtual ~CMediaLibrary();
-	__int32  GetExtendedFileInfo(const wchar_t *fn, const wchar_t *Metadata, wchar_t *dest, size_t destlen);
-	__int32  SetExtendedFileInfo(const wchar_t *fn, const wchar_t *Metadata, const wchar_t *val);
+	MediaLibrary();
+	virtual ~MediaLibrary();
+	__int32  GetExtendedFileInfo(const wchar_t *fn, const char *Metadata, wchar_t *dest, size_t destlen);
+	__int32  SetExtendedFileInfo(const wchar_t *fn, const char *Metadata, const wchar_t *val);
 	__int32  WriteExtendedFileInfo();
-	void FlushCache(void);
-	std::wstring GetCurrentFileName() { return FileName; };
-	bool	isValid() { return isValidFile; };
+	void FlushCache();
+	std::wstring GetCurrentFileName() { return m_FileName; };
+	bool	isValid() const { return m_isValidFile; };
 
 private:
 
-	CRITICAL_SECTION	CriticalSection;
-	TagInfo				TagDataW;
-	DWORD				GetTagTime;
-	std::wstring		FileName;
-	bool				isValidFile;
+	CRITICAL_SECTION	m_CriticalSection;
+	TagInfo				m_TagDataW {};
+	DWORD				m_GetTagTime;
+	std::wstring		m_FileName;
+	bool				m_isValidFile;
 
 	bool GetTagInfo(const std::wstring fn);
 

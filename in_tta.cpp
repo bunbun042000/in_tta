@@ -1,15 +1,12 @@
-// in_tta.cpp : Defines the initialization routines for the DLL.
-//
-/* Description:	 TTA input plug-in for upper Winamp 2.91
- *               with MediaLibrary Extension version
- * Developed by: Alexander Djourik <ald@true-audio.com>
- *               Pavel Zhilin <pzh@true-audio.com>
- *               (MediaLibrary Extension Yamagata Fumihiro <bunbun042000@gmail.com> )
+/*
+ * in_tta.c
  *
- * Copyright (c) 2005 Alexander Djourik. All rights reserved.
+ * Description:	 TTA input plug-in for Winamp 2
+ *
+ * Copyright (c) 2005-2009 Aleksander Djuric. All rights reserved.
  *
  */
-
+ 
  /*
  The ttaplugin-winamp project.
  Copyright (C) 2005-2025 Yamagata Fumihiro
@@ -45,26 +42,25 @@
 #include <taglib/tstring.h>
 
 #include "DecodeFile.h"
-#include "..\common\VersionNo.h"
+#include "VersionNo.h"
 #include "resource.h"
 
 const static int MAX_MESSAGE_LENGTH = 1024;
 const static __int32 PLAYING_BUFFER_LENGTH = 576;
-const static __int32 TRANSCODING_BUFFER_LENGTH = 5120;
 
 // for playing static variables
-static __declspec(align(16)) CDecodeFile playing_ttafile;
+static alignas(16) DecodeFile playing_ttafile;
 
 static HANDLE decoder_handle = INVALID_HANDLE_VALUE;
 static DWORD WINAPI __stdcall DecoderThread(void *p);
 static volatile int killDecoderThread = 0;
 
 // for transcoding static variable
-static __declspec(align(16)) CDecodeFile transcode_ttafile;
+static alignas(16) DecodeFile transcode_ttafile;
 
 // for MetaData static variables
-CMediaLibrary m_ReadTag;
-CMediaLibrary m_WriteTag;
+MediaLibrary m_ReadTag;
+MediaLibrary m_WriteTag;
 
 void config(HWND hwndParent);
 void about(HWND hwndParent);
@@ -85,13 +81,16 @@ void setvolume(int volume);
 void setpan(int pan);
 void eq_set(int on, char data[10], int preamp);
 
+char description[] = "TTA Audio Decoder " PLUGIN_VERSION_CHAR;			// description of module, with version string
+char FileExtensions[] = "TTA\0TTA Audio File (*.TTA)\0";		// "mp3\0Layer 3 MPEG\0mp2\0Layer 2 MPEG\0mpg\0Layer 1 MPEG\0"
+
 In_Module mod =
 {
 	IN_VER,
-	"TTA Audio Decoder " PLUGIN_VERSION_CHAR,
-	NULL,		// hMainWindow
-	NULL,		// hDllInstance
-	"TTA\0TTA Audio File (*.TTA)\0",
+	description,
+	nullptr,		// hMainWindow
+	nullptr,		// hDllInstance
+	FileExtensions,
 	1,			// is_seekable
 	1,			// uses output
 	config,
@@ -111,11 +110,11 @@ In_Module mod =
 	setoutputtime,
 	setvolume,
 	setpan,
-	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, // vis stuff
-	NULL, NULL,	// dsp
+	nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, // vis stuff
+	nullptr, nullptr,	// dsp
 	eq_set,
-	NULL,		// setinfo
-	NULL		// out_mod
+	nullptr,		// setinfo
+	nullptr			// out_mod
 };
 
 static void tta_error_message(int error, const wchar_t *filename)
@@ -213,7 +212,8 @@ void quit()
 void getfileinfo(const wchar_t *file, wchar_t *title, int *length_in_ms)
 {
 
-	title = L"";
+	wchar_t null_char[] = L"";
+	title = null_char;
 
 	if (!file || !*file)
 	{
@@ -273,14 +273,14 @@ int play(const wchar_t *filename)
 		return_number = playing_ttafile.SetFileName(filename);
 	}
 
-	catch (CDecodeFile_exception &ex)
+	catch (DecodeFile_exception &ex)
 	{
 		tta_error_message(ex.code(), filename);
 		return -1;
 	}
 
 	maxlatency = mod.outMod->Open(playing_ttafile.GetSampleRate(),
-		playing_ttafile.GetNumberofChannel(), playing_ttafile.GetOutputBPS(), -1, -1);
+		playing_ttafile.GetNumberofChannel(), static_cast<int>(playing_ttafile.GetOutputBPS()), -1, -1);
 	if (maxlatency < 0)
 	{
 		stop();
@@ -303,7 +303,7 @@ int play(const wchar_t *filename)
 
 	killDecoderThread = 0;
 
-	decoder_handle = CreateThread(NULL, 0, DecoderThread, NULL, 0, &decoder_thread_id);
+	decoder_handle = CreateThread(nullptr, 0, DecoderThread, nullptr, 0, &decoder_thread_id);
 	if (!decoder_handle)
 	{
 		stop();
@@ -509,7 +509,7 @@ DWORD WINAPI __stdcall DecoderThread(void *p)
 			{
 				decoded_samples = playing_ttafile.GetSamples(pcm_buffer, PLAYING_BUFFER_SIZE, &bitrate);
 			}
-			catch (CDecodeFile_exception &ex)
+			catch (DecodeFile_exception &ex)
 			{
 				tta_error_message(ex.code(), playing_ttafile.GetFileName());
 				PostMessage(mod.hMainWindow, WM_WA_MPEG_EOF, 0, 0);
@@ -525,10 +525,10 @@ DWORD WINAPI __stdcall DecoderThread(void *p)
 			}
 			else
 			{
-				do_vis(pcm_buffer, decoded_samples, playing_ttafile.GetOutputBPS(), playing_ttafile.GetDecodePosMs());
+				do_vis(pcm_buffer, decoded_samples, static_cast<int>(playing_ttafile.GetOutputBPS()), playing_ttafile.GetDecodePosMs());
 				if (mod.dsp_isactive())
 				{
-					decoded_samples = mod.dsp_dosamples(reinterpret_cast<short*>(pcm_buffer), decoded_samples, playing_ttafile.GetOutputBPS(),
+					decoded_samples = mod.dsp_dosamples(reinterpret_cast<short*>(pcm_buffer), decoded_samples, static_cast<int>(playing_ttafile.GetOutputBPS()),
 						playing_ttafile.GetNumberofChannel(), playing_ttafile.GetSampleRate());
 				}
 				else
@@ -536,7 +536,7 @@ DWORD WINAPI __stdcall DecoderThread(void *p)
 					// Do nothing
 				}
 				mod.outMod->Write(reinterpret_cast<char *>(pcm_buffer), decoded_samples * playing_ttafile.GetNumberofChannel()
-					* (playing_ttafile.GetOutputBPS() >> 3));
+					* static_cast<int>(playing_ttafile.GetOutputBPS() >> 3));
 			}
 
 			mod.SetInfo(bitrate, playing_ttafile.GetSampleRate() / 1000, playing_ttafile.GetNumberofChannel(), 1);
@@ -562,7 +562,7 @@ extern "C"
 
 
 	__declspec(dllexport) int __cdecl
-		winampGetExtendedFileInfoW(const wchar_t *fn, const wchar_t *data, wchar_t *dest, size_t destlen)
+		winampGetExtendedFileInfoW(const wchar_t *fn, const char *data, wchar_t *dest, size_t destlen)
 	{
 
 		return m_ReadTag.GetExtendedFileInfo(fn, data, dest, destlen);
@@ -592,7 +592,7 @@ extern "C"
 
 
 	__declspec(dllexport) int __cdecl
-		winampSetExtendedFileInfoW(const wchar_t *fn, const wchar_t *data, const wchar_t *val)
+		winampSetExtendedFileInfoW(const wchar_t *fn, const char *data, const wchar_t *val)
 	{
 		return m_WriteTag.SetExtendedFileInfo(fn, data, val);
 	}
@@ -607,10 +607,10 @@ extern "C"
 		winampGetExtendedRead_openW(const wchar_t *filename, int *size, int *bps, int *nch, int *srate)
 	{
 
-		CDecodeFile *dec = &transcode_ttafile;
+		DecodeFile *dec = &transcode_ttafile;
 		if (!dec->isValid())
 		{
-			return (intptr_t)0;
+			return static_cast<intptr_t>(0);
 		}
 		else
 		{
@@ -622,10 +622,10 @@ extern "C"
 			dec->SetFileName(filename);
 		}
 
-		catch (CDecodeFile_exception &ex)
+		catch (DecodeFile_exception &ex)
 		{
 			tta_error_message(ex.code(), filename);
-			return (intptr_t)0;
+			return static_cast<intptr_t>(0);
 		}
 
 		*bps = dec->GetBitsperSample();
@@ -633,12 +633,12 @@ extern "C"
 		*srate = dec->GetSampleRate();
 		*size = dec->GetDataLength() * (*bps / 8) * (*nch);
 
-		return (intptr_t)dec;
+		return reinterpret_cast<intptr_t>(dec);
 	}
 
 	__declspec(dllexport) intptr_t __cdecl winampGetExtendedRead_getData(intptr_t handle, char *dest, int len, int *killswitch)
 	{
-		CDecodeFile *dec = &transcode_ttafile;
+		DecodeFile *dec = &transcode_ttafile;
 		int dest_used = 0;
 		int n = 0;
 		int bitrate;
@@ -647,7 +647,7 @@ extern "C"
 
 		if (!dec->isDecodable())
 		{
-			return (intptr_t)-1;
+			return static_cast<intptr_t>(-1);
 		}
 		else
 		{
@@ -656,9 +656,9 @@ extern "C"
 
 		try
 		{
-			decoded_samples = dec->GetSamples((BYTE *)dest, len, &bitrate);
+			decoded_samples = dec->GetSamples(reinterpret_cast<BYTE *>(dest), static_cast<size_t>(len), &bitrate);
 		}
-		catch (CDecodeFile_exception &ex)
+		catch (DecodeFile_exception &ex)
 		{
 			tta_error_message(ex.code(), dec->GetFileName());
 			dest_used = -1;
@@ -674,15 +674,15 @@ extern "C"
 		}
 
 
-		return (intptr_t)decoded_bytes;
+		return static_cast<intptr_t>(decoded_bytes);
 	}
 
 	// return nonzero on success, zero on failure
 	__declspec(dllexport) int __cdecl winampGetExtendedRead_setTime(intptr_t handle, int millisecs)
 	{
 		int done = 0;
-		CDecodeFile *dec = &transcode_ttafile;
-		if (NULL != dec && dec->isValid() && dec->isDecodable())
+		DecodeFile *dec = &transcode_ttafile;
+		if (nullptr != dec && dec->isValid() && dec->isDecodable())
 		{
 			dec->SetSeekNeeded(millisecs);
 			dec->SeekPosition(&done);

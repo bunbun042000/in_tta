@@ -25,6 +25,7 @@
     <CLRSupport>false</CLRSupport>
     <WholeProgramOptimization>false</WholeProgramOptimization>
     <PlatformToolset>v145</PlatformToolset>
+    <SpectreMitigation>Spectre</SpectreMitigation>
   </PropertyGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -32,6 +33,7 @@
     <WholeProgramOptimization>PGOptimize</WholeProgramOptimization>
     <UseOfMfc>false</UseOfMfc>
     <PlatformToolset>v145</PlatformToolset>
+    <SpectreMitigation>Spectre</SpectreMitigation>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -53,7 +55,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)libraries\include\;$(ProgramFiles) (x86)\Winamp SDK\;$(ProgramFiles) (x86)\Winamp SDK\Wasabi\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)common\;$(SolutionDir)libraries\include\;$(ProgramFiles) (x86)\Winamp SDK\;$(ProgramFiles) (x86)\Winamp SDK\Wasabi\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;TAGLIB_STATIC;ZLIB_WINAPI;_USRDLL;_ENABLE_EXTENDED_ALIGNED_STORAGE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessToFile>false</PreprocessToFile>
       <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
@@ -73,6 +75,7 @@
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -117,7 +120,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <PreprocessorDefinitions>WIN32;_WINDOWS;TAGLIB_STATIC;ZLIB_WINAPI;_USRDLL;_ENABLE_EXTENDED_ALIGNED_STORAGE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)libraries\include;$(ProgramFiles) (x86)\Winamp SDK;$(ProgramFiles) (x86)\Winamp SDK\Wasabi;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)common\;$(SolutionDir)libraries\include;$(ProgramFiles) (x86)\Winamp SDK;$(ProgramFiles) (x86)\Winamp SDK\Wasabi;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WarningLevel>Level3</WarningLevel>
       <TreatWarningAsError>false</TreatWarningAsError>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -131,6 +134,7 @@
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <FloatingPointModel>Precise</FloatingPointModel>
       <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)libraries\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
