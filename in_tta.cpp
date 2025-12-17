@@ -1,12 +1,9 @@
-// in_tta.cpp : Defines the initialization routines for the DLL.
-//
-/* Description:	 TTA input plug-in for upper Winamp 2.91
- *               with MediaLibrary Extension version
- * Developed by: Alexander Djourik <ald@true-audio.com>
- *               Pavel Zhilin <pzh@true-audio.com>
- *               (MediaLibrary Extension Yamagata Fumihiro <bunbun042000@gmail.com> )
+/*
+ * in_tta.c
  *
- * Copyright (c) 2005 Alexander Djourik. All rights reserved.
+ * Description:	 TTA input plug-in for Winamp 2
+ *
+ * Copyright (c) 2005-2009 Aleksander Djuric. All rights reserved.
  *
  */
 
