@@ -56,8 +56,8 @@ class MediaLibrary
 public:
 	MediaLibrary();
 	virtual ~MediaLibrary();
-	__int32  GetExtendedFileInfo(const wchar_t *fn, const wchar_t *Metadata, wchar_t *dest, size_t destlen);
-	__int32  SetExtendedFileInfo(const wchar_t *fn, const wchar_t *Metadata, const wchar_t *val);
+	__int32  GetExtendedFileInfo(const wchar_t *fn, const char *Metadata, wchar_t *dest, size_t destlen);
+	__int32  SetExtendedFileInfo(const wchar_t *fn, const char *Metadata, const wchar_t *val);
 	__int32  WriteExtendedFileInfo();
 	void FlushCache();
 	std::wstring GetCurrentFileName() { return m_FileName; };

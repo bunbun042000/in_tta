@@ -562,7 +562,7 @@ extern "C"
 
 
 	__declspec(dllexport) int __cdecl
-		winampGetExtendedFileInfoW(const wchar_t *fn, const wchar_t *data, wchar_t *dest, size_t destlen)
+		winampGetExtendedFileInfoW(const wchar_t *fn, const char *data, wchar_t *dest, size_t destlen)
 	{
 
 		return m_ReadTag.GetExtendedFileInfo(fn, data, dest, destlen);
@@ -592,7 +592,7 @@ extern "C"
 
 
 	__declspec(dllexport) int __cdecl
-		winampSetExtendedFileInfoW(const wchar_t *fn, const wchar_t *data, const wchar_t *val)
+		winampSetExtendedFileInfoW(const wchar_t *fn, const char *data, const wchar_t *val)
 	{
 		return m_WriteTag.SetExtendedFileInfo(fn, data, val);
 	}

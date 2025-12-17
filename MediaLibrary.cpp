@@ -182,7 +182,7 @@ bool MediaLibrary::GetTagInfo(const std::wstring fn)
 	return true;
 }
 
-int MediaLibrary::GetExtendedFileInfo(const wchar_t *fn, const wchar_t *Metadata, wchar_t *dest, size_t destlen)
+int MediaLibrary::GetExtendedFileInfo(const wchar_t *fn, const char *Metadata, wchar_t *dest, size_t destlen)
 {
 
 	bool FindTag;
@@ -209,77 +209,76 @@ int MediaLibrary::GetExtendedFileInfo(const wchar_t *fn, const wchar_t *Metadata
 
 	if (FindTag) {
 		wchar_t	Buff[MAX_MUSICTEXT] = {};
-		const char *MetaData = reinterpret_cast<const char*>(Metadata);
 
-		if (_stricmp(MetaData, "length") == 0)
+		if (_stricmp(Metadata, "length") == 0)
 		{
 			_ultow_s(m_TagDataW.Length, dest, destlen, 10);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "formatinformation") == 0)
+		else if (_stricmp(Metadata, "formatinformation") == 0)
 		{
 			wcsncpy_s(dest, destlen, m_TagDataW.Format.c_str(), _TRUNCATE);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "type") == 0)
+		else if (_stricmp(Metadata, "type") == 0)
 		{
 			Buff[0] = '0';
 			Buff[1] = 0;
 			wcsncpy_s(dest, destlen, Buff, _TRUNCATE);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "family") == 0)
+		else if (_stricmp(Metadata, "family") == 0)
 		{
 			wcsncpy_s(dest, destlen, L"The True Audio File", _TRUNCATE);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "lossless") == 0)
+		else if (_stricmp(Metadata, "lossless") == 0)
 		{
 			Buff[0] = '1';
 			wcsncpy_s(dest, destlen, Buff, _TRUNCATE);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "title") == 0)
+		else if (_stricmp(Metadata, "title") == 0)
 		{
 			wcsncpy_s(dest, destlen, m_TagDataW.Title.c_str(), _TRUNCATE);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "artist") == 0)
+		else if (_stricmp(Metadata, "artist") == 0)
 		{
 			wcsncpy_s(dest, destlen, m_TagDataW.Artist.c_str(), _TRUNCATE);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "albumartist") == 0)
+		else if (_stricmp(Metadata, "albumartist") == 0)
 		{
 			wcsncpy_s(dest, destlen, m_TagDataW.AlbumArtist.c_str(), _TRUNCATE);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "comment") == 0)
+		else if (_stricmp(Metadata, "comment") == 0)
 		{
 			wcsncpy_s(dest, destlen, m_TagDataW.Comment.c_str(), _TRUNCATE);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "album") == 0)
+		else if (_stricmp(Metadata, "album") == 0)
 		{
 			wcsncpy_s(dest, destlen, m_TagDataW.Album.c_str(), _TRUNCATE);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "year") == 0)
+		else if (_stricmp(Metadata, "year") == 0)
 		{
 			wcsncpy_s(dest, destlen, m_TagDataW.Year.c_str(), _TRUNCATE);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "genre") == 0)
+		else if (_stricmp(Metadata, "genre") == 0)
 		{
 			wcsncpy_s(dest, destlen, m_TagDataW.Genre.c_str(), _TRUNCATE);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "track") == 0)
+		else if (_stricmp(Metadata, "track") == 0)
 		{
 			wcsncpy_s(dest, destlen, m_TagDataW.Track.c_str(), _TRUNCATE);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "tracks") == 0)
+		else if (_stricmp(Metadata, "tracks") == 0)
 		{
 			size_t slash_pos = m_TagDataW.Track.find_first_of(L'/');
 			if (slash_pos != std::wstring::npos)
@@ -292,22 +291,22 @@ int MediaLibrary::GetExtendedFileInfo(const wchar_t *fn, const wchar_t *Metadata
 			}
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "composer") == 0)
+		else if (_stricmp(Metadata, "composer") == 0)
 		{
 			wcsncpy_s(dest, destlen, m_TagDataW.Composer.c_str(), _TRUNCATE);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "publisher") == 0)
+		else if (_stricmp(Metadata, "publisher") == 0)
 		{
 			wcsncpy_s(dest, destlen, m_TagDataW.Publisher.c_str(), _TRUNCATE);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "disc") == 0)
+		else if (_stricmp(Metadata, "disc") == 0)
 		{
 			wcsncpy_s(dest, destlen, m_TagDataW.Disc.c_str(), _TRUNCATE);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "discs") == 0)
+		else if (_stricmp(Metadata, "discs") == 0)
 		{
 			size_t slash_pos = m_TagDataW.Disc.find_first_of(L'/');
 			if (slash_pos != std::wstring::npos)
@@ -320,12 +319,12 @@ int MediaLibrary::GetExtendedFileInfo(const wchar_t *fn, const wchar_t *Metadata
 			}
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "bpm") == 0)
+		else if (_stricmp(Metadata, "bpm") == 0)
 		{
 			wcsncpy_s(dest, destlen, m_TagDataW.BPM.c_str(), _TRUNCATE);
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "bitrate") == 0)
+		else if (_stricmp(Metadata, "bitrate") == 0)
 		{
 			wcsncpy_s(dest, destlen, m_TagDataW.bitrate.c_str(), _TRUNCATE);
 			RetCode = 1;
@@ -346,7 +345,7 @@ int MediaLibrary::GetExtendedFileInfo(const wchar_t *fn, const wchar_t *Metadata
 	return RetCode;
 }
 
-int MediaLibrary::SetExtendedFileInfo(const wchar_t *fn, const wchar_t *Metadata, const wchar_t *val)
+int MediaLibrary::SetExtendedFileInfo(const wchar_t *fn, const char *Metadata, const wchar_t *val)
 {
 
 	bool FindTag = false;
@@ -373,64 +372,63 @@ int MediaLibrary::SetExtendedFileInfo(const wchar_t *fn, const wchar_t *Metadata
 
 	if (FindTag)
 	{
-		const char *MetaData = reinterpret_cast<const char*>(Metadata);
 
-		if (_stricmp(MetaData, "title") == 0)
+		if (_stricmp(Metadata, "title") == 0)
 		{
 			m_TagDataW.Title = val;
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "artist") == 0)
+		else if (_stricmp(Metadata, "artist") == 0)
 		{
 			m_TagDataW.Artist = val;
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "albumartist") == 0)
+		else if (_stricmp(Metadata, "albumartist") == 0)
 		{
 			m_TagDataW.AlbumArtist = val;
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "comment") == 0)
+		else if (_stricmp(Metadata, "comment") == 0)
 		{
 			m_TagDataW.Comment = val;
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "album") == 0)
+		else if (_stricmp(Metadata, "album") == 0)
 		{
 			m_TagDataW.Album = val;
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "year") == 0)
+		else if (_stricmp(Metadata, "year") == 0)
 		{
 			m_TagDataW.Year = val;
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "genre") == 0)
+		else if (_stricmp(Metadata, "genre") == 0)
 		{
 			m_TagDataW.Genre = val;
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "track") == 0)
+		else if (_stricmp(Metadata, "track") == 0)
 		{
 			m_TagDataW.Track = val;
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "composer") == 0)
+		else if (_stricmp(Metadata, "composer") == 0)
 		{
 			m_TagDataW.Composer = val;
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "publisher") == 0)
+		else if (_stricmp(Metadata, "publisher") == 0)
 		{
 			m_TagDataW.Publisher = val;
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "disc") == 0)
+		else if (_stricmp(Metadata, "disc") == 0)
 		{
 			m_TagDataW.Disc = val;
 			RetCode = 1;
 		}
-		else if (_stricmp(MetaData, "bpm") == 0)
+		else if (_stricmp(Metadata, "bpm") == 0)
 		{
 			m_TagDataW.BPM = val;
 			RetCode = 1;
