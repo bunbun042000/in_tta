@@ -437,8 +437,8 @@ static void do_vis(unsigned char *data, int count, int bps, long double position
 
 	if (playing_ttafile.isValid() && playing_ttafile.isDecodable())
 	{
-		mod.SAAddPCMData(data, playing_ttafile.GetNumberofChannel(), bps, (int)position);
-		mod.VSAAddPCMData(data, playing_ttafile.GetNumberofChannel(), bps, (int)position);
+		mod.SAAddPCMData(data, playing_ttafile.GetNumberofChannel(), bps, static_cast<int>(position));
+		mod.VSAAddPCMData(data, playing_ttafile.GetNumberofChannel(), bps, static_cast<int>(position));
 	}
 	else
 	{
