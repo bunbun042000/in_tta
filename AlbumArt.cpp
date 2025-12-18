@@ -34,6 +34,7 @@ If not, see <https://www.gnu.org/licenses/>.
 
 #include "AlbumArt.h"
 #include "ID3v2TagExtension.h"
+#include "agaveCommon.h"
 
 class AlbumArtFactory : public waServiceFactory
 {
@@ -63,7 +64,7 @@ static api_memmgr *WASABI_API_MEMMGR = 0;
 
 static AlbumArtFactory albumArtFactory;
 
-void Wasabi_Init()
+void AlbumArt_Wasabi_Init()
 {
 	WASABI_API_SVC = reinterpret_cast<api_service *>(SendMessage(mod.hMainWindow, WM_WA_IPC, 0, IPC_GET_API_SERVICE));
 
@@ -102,7 +103,7 @@ void Wasabi_Init()
 	}
 }
 
-void Wasabi_Quit()
+void AlbumArt_Wasabi_Quit()
 {
 	if (WASABI_API_SVC)
 	{
@@ -130,12 +131,12 @@ void Wasabi_Quit()
 	}
 }
 
-void *Wasabi_Malloc(size_t size_in_bytes)
+void *AlbumArt_Wasabi_Malloc(size_t size_in_bytes)
 {
 	return WASABI_API_MEMMGR->sysMalloc(size_in_bytes);
 }
 
-void Wasabi_Free(void *memory_block)
+void AlbumArt_Wasabi_Free(void *memory_block)
 {
 	WASABI_API_MEMMGR->sysFree(memory_block);
 }
@@ -176,97 +177,6 @@ TTA_AlbumArtProvider::~TTA_AlbumArtProvider()
 	m_FileName = L"";
 	m_AlbumArt = TagLib::ByteVector();
 	m_extension = TagLib::String();
-}
-
-static const wchar_t *GetLastCharactercW(const wchar_t *string)
-{
-	if (!string || !*string)
-	{
-		return string;
-	}
-	else
-	{
-		// Do nothing
-	}
-
-	return CharPrevW(string, string + lstrlenW(string));
-}
-
-static const wchar_t *scanstr_backW(const wchar_t *str, const wchar_t *toscan, const wchar_t *defval)
-{
-	const wchar_t *s = GetLastCharactercW(str);
-
-	if (!str[0])
-	{
-		return defval;
-	}
-	else
-	{
-		// Do nothing
-	}
-
-	if (!toscan || !toscan[0])
-	{
-		return defval;
-	}
-	else
-	{
-		// Do nothing
-	}
-
-	while (1)
-	{
-		const wchar_t *t = toscan;
-
-		while (*t)
-		{
-			if (*t == *s)
-			{
-				return s;
-			}
-			else
-			{
-				// Do nothing
-			}
-			t = CharNextW(t);
-		}
-
-		t = CharPrevW(str, s);
-
-		if (t == s)
-		{
-			return defval;
-		}
-		else
-		{
-			// Do nothing
-		}
-		s = t;
-	}
-}
-
-static const wchar_t *extensionW(const wchar_t *fn)
-{
-	const wchar_t *end = scanstr_backW(fn, L"./\\", 0);
-	if (!end)
-	{
-		return (fn + lstrlenW(fn));
-	}
-	else
-	{
-		// Do nothing
-	}
-
-	if (*end == L'.')
-	{
-		return end + 1;
-	}
-	else
-	{
-		// Do nothing
-	}
-
-	return (fn + lstrlenW(fn));
 }
 
 bool TTA_AlbumArtProvider::IsMine(const wchar_t *filename)
@@ -347,7 +257,7 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 	if (!m_AlbumArt.isEmpty())
 	{
 		*len = m_AlbumArt.size();
-		*bits = static_cast<char *>(Wasabi_Malloc(*len));
+		*bits = static_cast<char *>(AlbumArt_Wasabi_Malloc(*len));
 		if (nullptr == *bits)
 		{
 			::LeaveCriticalSection(&m_CriticalSection);
@@ -369,12 +279,12 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 			// Do nothing
 		}
 
-		*mime_type = static_cast<wchar_t *>(Wasabi_Malloc(m_extension.size() * 2 + 2));
+		*mime_type = static_cast<wchar_t *>(AlbumArt_Wasabi_Malloc(m_extension.size() * 2 + 2));
 		if (nullptr == *mime_type)
 		{
 			if (nullptr != *bits)
 			{
-				Wasabi_Free(*bits);
+				AlbumArt_Wasabi_Free(*bits);
 			}
 			else
 			{
@@ -393,7 +303,7 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 		{
 			if (nullptr != *bits)
 			{
-				Wasabi_Free(*bits);
+				AlbumArt_Wasabi_Free(*bits);
 			}
 			else
 			{
@@ -402,7 +312,7 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 
 			if (nullptr != *mime_type)
 			{
-				Wasabi_Free(*mime_type);
+				AlbumArt_Wasabi_Free(*mime_type);
 			}
 			else
 			{

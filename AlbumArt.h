@@ -21,9 +21,9 @@ If not, see <https://www.gnu.org/licenses/>.
 #ifndef ALBUMART_H
 #define ALBUMART_H
 
-void Wasabi_Init();
-void Wasabi_Quit();
-void *Wasabi_Malloc(size_t size_in_bytes);
-void Wasabi_Free(void *memory_block);
+void AlbumArt_Wasabi_Init();
+void AlbumArt_Wasabi_Quit();
+void *AlbumArt_Wasabi_Malloc(size_t size_in_bytes);
+void AlbumArt_Wasabi_Free(void *memory_block);
 
 #endif // #ifndef ALBUMART_H

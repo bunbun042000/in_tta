@@ -161,13 +161,16 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="agaveCommon.cpp" />
     <ClCompile Include="AlbumArt.cpp" />
     <ClCompile Include="DecodeFile.cpp" />
     <ClCompile Include="in_tta.cpp" />
     <ClCompile Include="MediaLibrary.cpp" />
     <ClCompile Include="ID3v2TagExtension.cpp" />
+    <ClCompile Include="MetaData.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="agaveCommon.h" />
     <ClInclude Include="AlbumArt.h" />
     <ClInclude Include="DecodeFile.h" />
     <ClInclude Include="in_tta.h" />

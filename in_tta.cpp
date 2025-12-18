@@ -198,12 +198,12 @@ void about(HWND hwndParent)
 
 void init()
 {
-	Wasabi_Init();
+	AlbumArt_Wasabi_Init();
 }
 
 void quit()
 {
-	Wasabi_Quit();
+	AlbumArt_Wasabi_Quit();
 }
 
 
