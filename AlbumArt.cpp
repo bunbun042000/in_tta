@@ -35,131 +35,8 @@ If not, see <https://www.gnu.org/licenses/>.
 #include "AlbumArt.h"
 #include "ID3v2TagExtension.h"
 #include "agaveCommon.h"
+#include "wasabi.h"
 
-class AlbumArtFactory : public waServiceFactory
-{
-public:
-	virtual ~AlbumArtFactory();
-
-	FOURCC GetServiceType();
-	const char *GetServiceName();
-	GUID GetGUID();
-	void *GetInterface(int global_lock);
-	int SupportNonLockingInterface();
-	int ReleaseInterface(void *ifc);
-	const char *GetTestString();
-	int ServiceNotify(int msg, int param1, int param2);
-
-protected:
-	RECVS_DISPATCH;
-};
-
-extern In_Module mod; // TODO: change if you called yours something else
-
-#define WASABI_API_MEMMGR memmgr
-
-static api_config *AGAVE_API_CONFIG = 0;
-static api_service *WASABI_API_SVC = 0;
-static api_memmgr *WASABI_API_MEMMGR = 0;
-
-static AlbumArtFactory albumArtFactory;
-
-void AlbumArt_Wasabi_Init()
-{
-	WASABI_API_SVC = reinterpret_cast<api_service *>(SendMessage(mod.hMainWindow, WM_WA_IPC, 0, IPC_GET_API_SERVICE));
-
-	if (WASABI_API_SVC == 0 || WASABI_API_SVC == reinterpret_cast<api_service *>(1))
-	{
-		WASABI_API_SVC = 0;
-		return;
-	}
-	else
-	{
-		// Do nothing
-	}
-
-	WASABI_API_SVC->service_register(&albumArtFactory);
-
-	waServiceFactory *sf = WASABI_API_SVC->service_getServiceByGuid(AgaveConfigGUID);
-
-	if (sf)
-	{
-		AGAVE_API_CONFIG = (api_config *)sf->getInterface();
-	}
-	else
-	{
-		// Do nothing
-	}
-
-	sf = WASABI_API_SVC->service_getServiceByGuid(memMgrApiServiceGuid);
-
-	if (sf)
-	{
-		WASABI_API_MEMMGR = (api_memmgr *)sf->getInterface();
-	}
-	else
-	{
-		// Do nothing
-	}
-}
-
-void AlbumArt_Wasabi_Quit()
-{
-	if (WASABI_API_SVC)
-	{
-		waServiceFactory *sf = WASABI_API_SVC->service_getServiceByGuid(AgaveConfigGUID);
-		if (sf)
-		{
-			sf->releaseInterface(AGAVE_API_CONFIG);
-		}
-		else
-		{
-			// Do nothing
-		}
-
-		sf = WASABI_API_SVC->service_getServiceByGuid(memMgrApiServiceGuid);
-		if (sf)
-		{
-			sf->releaseInterface(WASABI_API_MEMMGR);
-		}
-		else
-		{
-			// Do nothing
-		}
-
-		WASABI_API_SVC->service_deregister(&albumArtFactory);
-	}
-}
-
-void *AlbumArt_Wasabi_Malloc(size_t size_in_bytes)
-{
-	return WASABI_API_MEMMGR->sysMalloc(size_in_bytes);
-}
-
-void AlbumArt_Wasabi_Free(void *memory_block)
-{
-	WASABI_API_MEMMGR->sysFree(memory_block);
-}
-
-class TTA_AlbumArtProvider : public svc_albumArtProvider
-{
-public:
-	TTA_AlbumArtProvider();
-	virtual ~TTA_AlbumArtProvider();
-	bool IsMine(const wchar_t *filename);
-	int ProviderType();
-	// implementation note: use WASABI_API_MEMMGR to alloc bits and mimetype, so that the recipient can free through that
-	int GetAlbumArtData(const wchar_t *filename, const wchar_t *type, void **bits, size_t *len, wchar_t **mimeType);
-	int SetAlbumArtData(const wchar_t *filename, const wchar_t *type, void *bits, size_t len, const wchar_t *mimeType);
-	int DeleteAlbumArt(const wchar_t *filename, const wchar_t *type);
-protected:
-	RECVS_DISPATCH;
-	CRITICAL_SECTION	m_CriticalSection;
-	std::wstring			m_FileName;
-	bool					m_isSucceed;
-	TagLib::ByteVector		m_AlbumArt;
-	TagLib::String			m_extension;
-};
 
 TTA_AlbumArtProvider::TTA_AlbumArtProvider() : svc_albumArtProvider()
 {
@@ -257,7 +134,7 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 	if (!m_AlbumArt.isEmpty())
 	{
 		*len = m_AlbumArt.size();
-		*bits = static_cast<char *>(AlbumArt_Wasabi_Malloc(*len));
+		*bits = static_cast<char *>(Wasabi_Malloc(*len));
 		if (nullptr == *bits)
 		{
 			::LeaveCriticalSection(&m_CriticalSection);
@@ -279,12 +156,12 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 			// Do nothing
 		}
 
-		*mime_type = static_cast<wchar_t *>(AlbumArt_Wasabi_Malloc(m_extension.size() * 2 + 2));
+		*mime_type = static_cast<wchar_t *>(Wasabi_Malloc(m_extension.size() * 2 + 2));
 		if (nullptr == *mime_type)
 		{
 			if (nullptr != *bits)
 			{
-				AlbumArt_Wasabi_Free(*bits);
+				Wasabi_Free(*bits);
 			}
 			else
 			{
@@ -303,7 +180,7 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 		{
 			if (nullptr != *bits)
 			{
-				AlbumArt_Wasabi_Free(*bits);
+				Wasabi_Free(*bits);
 			}
 			else
 			{
@@ -312,7 +189,7 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 
 			if (nullptr != *mime_type)
 			{
-				AlbumArt_Wasabi_Free(*mime_type);
+				Wasabi_Free(*mime_type);
 			}
 			else
 			{

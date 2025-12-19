@@ -136,6 +136,7 @@
       <FloatingPointModel>Precise</FloatingPointModel>
       <CompileAs>CompileAsCpp</CompileAs>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)$(Configuration)\;$(SolutionDir)libraries\lib\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -168,6 +169,7 @@
     <ClCompile Include="MediaLibrary.cpp" />
     <ClCompile Include="ID3v2TagExtension.cpp" />
     <ClCompile Include="MetaData.cpp" />
+    <ClCompile Include="wasabi.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="agaveCommon.h" />
@@ -175,14 +177,17 @@
     <ClInclude Include="DecodeFile.h" />
     <ClInclude Include="in_tta.h" />
     <ClInclude Include="MediaLibrary.h" />
+    <ClInclude Include="MetaData.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ID3v2TagExtension.h" />
+    <ClInclude Include="wasabi.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="in_tta.rc" />
     <ResourceCompile Include="resource.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="cpp.hint" />
     <None Include="info.ico" />
   </ItemGroup>
   <ItemGroup>

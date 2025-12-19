@@ -31,6 +31,7 @@ If not, see <https://www.gnu.org/licenses/>.
 #include <type_traits>
 #include <strsafe.h>
 
+#include "wasabi.h"
 #include "AlbumArt.h"
 #include "MediaLibrary.h"
 #include "in_tta.h"
@@ -198,12 +199,12 @@ void about(HWND hwndParent)
 
 void init()
 {
-	AlbumArt_Wasabi_Init();
+	Wasabi_Init();
 }
 
 void quit()
 {
-	AlbumArt_Wasabi_Quit();
+	Wasabi_Quit();
 }
 
 

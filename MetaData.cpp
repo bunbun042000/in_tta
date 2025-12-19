@@ -39,86 +39,8 @@ If not, see <https://www.gnu.org/licenses/>.
 
 #include "agaveCommon.h"
 #include "ID3v2TagExtension.h"
+#include "MetaData.h"
 
-static const size_t TAGNAME_LENGTH = 100;
-
-
-/*
-struct TagInfo
-{
-	unsigned long	Length;
-	std::wstring	Format;
-	std::wstring	Title;
-	std::wstring	Artist;
-	std::wstring	AlbumArtist;
-	std::wstring	Comment;
-	std::wstring	Album;
-	std::wstring	Year;
-	std::wstring	Genre;
-	std::wstring	Track;
-	std::wstring	Composer;
-	std::wstring	Publisher;
-	std::wstring	Disc;
-	std::wstring	BPM;
-	std::wstring    bitrate;
-};
-*/
-
-class metaTagFactory : public waServiceFactory
-{
-public:
-	virtual ~metaTagFactory();
-
-	FOURCC GetServiceType();
-	const char* GetServiceName();
-	GUID GetGUID();
-	void* GetInterface(int global_lock);
-	int SupportNonLockingInterface();
-	int ReleaseInterface(void* ifc);
-	const char* GetTestString();
-	int ServiceNotify(int msg, int param1, int param2);
-
-protected:
-	RECVS_DISPATCH;
-};
-
-static metaTagFactory MetaTagFactory;
-
-class TTA_metaTag : public svc_metaTag
-{
-	public:
-	TTA_metaTag();
-	virtual ~TTA_metaTag();
-
-	static FOURCC getServiceType() { return svc_metaTag::SERVICETYPE; }
-	const wchar_t* getName();	// i.e. "ID3v2" or something
-	GUID getGUID(); // this needs to be the same GUID that you use when registering your service factory
-	int getFlags(); // how this service gets its info
-	int isOurFile(const wchar_t* filename);
-	int metaTag_open(const wchar_t* filename);
-	void metaTag_close(); // self-destructs when this is called (you don't need to call serviceFactory->releaseInterface)
-
-	/* user API starts here */
-	const wchar_t* enumSupportedTag(int n, int* datatype = NULL);	// returns a list of understood tags. might not be complete (see note [1])
-	int getTagSize(const wchar_t* tag, size_t* sizeBytes); // always gives you BYTES, not characters (be careful with your strings)
-	int getMetaData(const wchar_t* tag, uint8_t* buf, int buflenBytes, int datatype = METATYPE_STRING); // buflen is BYTES, not characters (be careful with your strings)
-	int setMetaData(const wchar_t* tag, const uint8_t* buf, int buflenBytes, int datatype = METATYPE_STRING);
-
-private:
-	void FlushCache();
-
-private:
-	CRITICAL_SECTION	m_CriticalSection;
-	std::map<const wchar_t*, std::wstring>m_Tag;
-	DWORD				m_GetTagTime;
-	std::wstring		m_FileName;
-	bool				m_isValidFile;
-	unsigned long		m_Length;
-	bool				m_isChanged;
-
-protected:
-	RECVS_DISPATCH;
-};
 
 // {50846701-71A9-40CF-9165-587D3A7DB325}
 static const GUID TTA_metaTag_GUID =
@@ -146,7 +68,7 @@ enum
 	METATAG_BITRATE,
 };
 
-static const wchar_t tagName[][TAGNAME_LENGTH] =
+static const std::wstring tagName[] =
 {
 	L"length",
 	L"formatinformation",
@@ -192,6 +114,8 @@ void TTA_metaTag::FlushCache()
 
 	m_isValidFile = false;
 	m_isChanged = false;
+
+	m_Tag.clear();
 
 	::LeaveCriticalSection(&m_CriticalSection);
 }
@@ -279,6 +203,7 @@ int TTA_metaTag::metaTag_open(const wchar_t* filename)
 			<< L"kbit/s\nNum. of Chan.\t: " << TTAFile.audioProperties()->channels()
 			<< L"(" << channel_designation
 			<< L")\nLength\t\t: " << second.str();
+
 		m_Tag.insert(std::make_pair(tagName[METATAG_FORMATINFORMATION], ttainfo_temp.str()));
 		m_Tag.insert(std::make_pair(tagName[METATAG_BITRATE], std::to_wstring(static_cast<long long>(TTAFile.audioProperties()->bitrate()))));
 		m_Tag.insert(std::make_pair(tagName[METATAG_TYPE], std::wstring(L"0")));
@@ -362,28 +287,28 @@ void TTA_metaTag::metaTag_close()
 			if (nullptr != TTAFile.ID3v2Tag(true))
 			{
 				ID3v2TagExtension* Tag_ex = static_cast<ID3v2TagExtension*>(TTAFile.ID3v2Tag());
-				Tag_ex->setTitle(m_Tag.at(tagName[METATAG_TITLE]));
-				Tag_ex->setArtist(m_Tag.at(tagName[METATAG_ARTIST]));
-				Tag_ex->setAlbum(m_Tag.at(tagName[METATAG_ALBUM]));
-				Tag_ex->setComment(m_Tag.at(tagName[METATAG_COMMENT]));
-				Tag_ex->setGenre(m_Tag.at(tagName[METATAG_GENRE]));
-				Tag_ex->setStringYear(m_Tag.at(tagName[METATAG_YEAR]));
-				Tag_ex->setStringTrack(m_Tag.at(tagName[METATAG_TRACK]));
-				Tag_ex->setAlbumArtist(m_Tag.at(tagName[METATAG_ALBUMARTIST]));
-				Tag_ex->setComposers(m_Tag.at(tagName[METATAG_COMPOSER]));
-				Tag_ex->setPublisher(m_Tag.at(tagName[METATAG_PUBLISHER]));
-				Tag_ex->setDisc(m_Tag.at(tagName[METATAG_DISC]));
-				Tag_ex->setBPM(m_Tag.at(tagName[METATAG_BPM]));
+				Tag_ex->setTitle(m_Tag[tagName[METATAG_TITLE]]);
+				Tag_ex->setArtist(m_Tag[tagName[METATAG_ARTIST]]);
+				Tag_ex->setAlbum(m_Tag[tagName[METATAG_ALBUM]]);
+				Tag_ex->setComment(m_Tag[tagName[METATAG_COMMENT]]);
+				Tag_ex->setGenre(m_Tag[tagName[METATAG_GENRE]]);
+				Tag_ex->setStringYear(m_Tag[tagName[METATAG_YEAR]]);
+				Tag_ex->setStringTrack(m_Tag[tagName[METATAG_TRACK]]);
+				Tag_ex->setAlbumArtist(m_Tag[tagName[METATAG_ALBUMARTIST]]);
+				Tag_ex->setComposers(m_Tag[tagName[METATAG_COMPOSER]]);
+				Tag_ex->setPublisher(m_Tag[tagName[METATAG_PUBLISHER]]);
+				Tag_ex->setDisc(m_Tag[tagName[METATAG_DISC]]);
+				Tag_ex->setBPM(m_Tag[tagName[METATAG_BPM]]);
 
 			}
 			else if (nullptr != TTAFile.ID3v1Tag(true))
 			{
-				TTAFile.ID3v1Tag()->setTitle(m_Tag.at(tagName[METATAG_TITLE]));
-				TTAFile.ID3v1Tag()->setArtist(m_Tag.at(tagName[METATAG_ARTIST]));
-				TTAFile.ID3v1Tag()->setAlbum(m_Tag.at(tagName[METATAG_ALBUM]));
-				TTAFile.ID3v1Tag()->setComment(m_Tag.at(tagName[METATAG_COMMENT]));
-				TTAFile.ID3v1Tag()->setYear(static_cast<unsigned int>(_wtoi(m_Tag.at(tagName[METATAG_YEAR]).c_str())));
-				TTAFile.ID3v1Tag()->setTrack(static_cast<unsigned int>(_wtoi(m_Tag.at(tagName[METATAG_TRACK]).c_str())));
+				TTAFile.ID3v1Tag()->setTitle(m_Tag[tagName[METATAG_TITLE]]);
+				TTAFile.ID3v1Tag()->setArtist(m_Tag[tagName[METATAG_ARTIST]]);
+				TTAFile.ID3v1Tag()->setAlbum(m_Tag[tagName[METATAG_ALBUM]]);
+				TTAFile.ID3v1Tag()->setComment(m_Tag[tagName[METATAG_COMMENT]]);
+				TTAFile.ID3v1Tag()->setYear(static_cast<unsigned int>(_wtoi(m_Tag[tagName[METATAG_YEAR]].c_str())));
+				TTAFile.ID3v1Tag()->setTrack(static_cast<unsigned int>(_wtoi(m_Tag[tagName[METATAG_TRACK]].c_str())));
 				TTAFile.ID3v1Tag()->setGenre(m_Tag.at(tagName[METATAG_GENRE]));
 			}
 			else
@@ -400,7 +325,6 @@ void TTA_metaTag::metaTag_close()
 	}
 
 	FlushCache();
-	m_Tag.~map();
 
 	::DeleteCriticalSection(&m_CriticalSection);
 
@@ -409,7 +333,7 @@ void TTA_metaTag::metaTag_close()
 
 const wchar_t* TTA_metaTag::enumSupportedTag(int n, int* datatype)
 {
-	return tagName[0];
+	return tagName[n].c_str();
 }
 
 int TTA_metaTag::getTagSize(const wchar_t* tag, size_t* sizeBytes)
@@ -430,7 +354,7 @@ int TTA_metaTag::getMetaData(const wchar_t* tag, uint8_t* buf, int buflenBytes, 
 {
 	if (m_Tag.contains(tag))
 	{
-		memcpy_s(buf, buflenBytes, reinterpret_cast<const uint8_t *>(m_Tag.at(tag).c_str()), static_cast<rsize_t>(m_Tag.at(tag).length() * sizeof(wchar_t)));
+		memcpy_s(buf, buflenBytes, reinterpret_cast<const uint8_t *>(m_Tag[tag].c_str()), static_cast<rsize_t>(m_Tag.at(tag).length() * sizeof(wchar_t)));
 	}
 	else
 	{
@@ -453,7 +377,7 @@ CB(SVC_METATAG_GETGUID, getGUID);
 CB(SVC_METATAG_GETFLAGS, getFlags);
 CB(SVC_METATAG_ISOURFILE, isOurFile);
 CB(SVC_METATAG_OPEN, metaTag_open);
-CB(SVC_METATAG_CLOSE, metaTag_close);
+VCB(SVC_METATAG_CLOSE, metaTag_close);
 CB(SVC_METATAG_ENUMTAGS, enumSupportedTag);
 CB(SVC_METATAG_GETTAGSIZE, getTagSize);
 CB(SVC_METATAG_GETMETADATA, getMetaData);
@@ -462,7 +386,6 @@ END_DISPATCH;
 #undef CBCLASS
 
 static TTA_metaTag metatag;
-
 
 metaTagFactory::~metaTagFactory()
 {
@@ -480,7 +403,7 @@ const char* metaTagFactory::GetServiceName()
 
 GUID metaTagFactory::GetGUID()
 {
-	return TTA_metaTag_GUID;
+	return metatag.getGUID();
 }
 
 void* metaTagFactory::GetInterface(int global_lock)
