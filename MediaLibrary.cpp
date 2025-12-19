@@ -319,6 +319,23 @@ int MediaLibrary::SetExtendedFileInfo(const wchar_t *fn, const char *Metadata, c
 
 	if (FindTag)
 	{
+		FindTag = GetTagInfo(fn);
+		if (FindTag)
+		{
+			m_FileName = std::wstring(fn);
+		}
+		else
+		{
+			// Do nothing
+		}
+	}
+	else
+	{
+		FindTag = true;
+	}
+
+	if (FindTag)
+	{
 		if (*val != L'\0')
 		{
 			if (_stricmp(Metadata, tagName[METATAG_LENGTH].c_str()) == 0)
