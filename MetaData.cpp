@@ -387,51 +387,51 @@ END_DISPATCH;
 
 static TTA_metaTag metatag;
 
-metaTagFactory::~metaTagFactory()
+MetaTagFactory::~MetaTagFactory()
 {
 }
 
-FOURCC metaTagFactory::GetServiceType()
+FOURCC MetaTagFactory::GetServiceType()
 {
 	return metatag.getServiceType();
 }
 
-const char* metaTagFactory::GetServiceName()
+const char* MetaTagFactory::GetServiceName()
 {
 	return "TTA Meta Tag Provider";
 }
 
-GUID metaTagFactory::GetGUID()
+GUID MetaTagFactory::GetGUID()
 {
 	return metatag.getGUID();
 }
 
-void* metaTagFactory::GetInterface(int global_lock)
+void* MetaTagFactory::GetInterface(int global_lock)
 {
 	return &metatag;
 }
 
-int metaTagFactory::SupportNonLockingInterface()
+int MetaTagFactory::SupportNonLockingInterface()
 {
 	return 1;
 }
 
-int metaTagFactory::ReleaseInterface(void* ifc)
+int MetaTagFactory::ReleaseInterface(void* ifc)
 {
 	return 1;
 }
 
-const char* metaTagFactory::GetTestString()
+const char* MetaTagFactory::GetTestString()
 {
 	return 0;
 }
 
-int metaTagFactory::ServiceNotify(int msg, int param1, int param2)
+int MetaTagFactory::ServiceNotify(int msg, int param1, int param2)
 {
 	return 1;
 }
 
-#define CBCLASS metaTagFactory
+#define CBCLASS MetaTagFactory
 START_DISPATCH;
 CB(WASERVICEFACTORY_GETSERVICETYPE, GetServiceType)
 CB(WASERVICEFACTORY_GETSERVICENAME, GetServiceName)

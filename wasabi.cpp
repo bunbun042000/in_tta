@@ -38,7 +38,7 @@ static api_service* WASABI_API_SVC = 0;
 static api_memmgr* WASABI_API_MEMMGR = 0;
 
 static AlbumArtFactory albumArtFactory;
-static metaTagFactory MetaTagFactory;
+static MetaTagFactory metaTagFactory;
 
 void Wasabi_Init()
 {
@@ -55,7 +55,7 @@ void Wasabi_Init()
 	}
 
 	WASABI_API_SVC->service_register(&albumArtFactory);
-	WASABI_API_SVC->service_register(&MetaTagFactory);
+	WASABI_API_SVC->service_register(&metaTagFactory);
 
 	waServiceFactory* sf = WASABI_API_SVC->service_getServiceByGuid(AgaveConfigGUID);
 
@@ -105,7 +105,7 @@ void Wasabi_Quit()
 		}
 
 		WASABI_API_SVC->service_deregister(&albumArtFactory);
-		WASABI_API_SVC->service_deregister(&MetaTagFactory);
+		WASABI_API_SVC->service_deregister(&metaTagFactory);
 	}
 }
 

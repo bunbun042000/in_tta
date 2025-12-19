@@ -24,10 +24,10 @@ If not, see <https://www.gnu.org/licenses/>.
 #include <agave/Metadata/svc_metatag.h>
 
 
-class metaTagFactory : public waServiceFactory
+class MetaTagFactory : public waServiceFactory
 {
 public:
-	virtual ~metaTagFactory();
+	virtual ~MetaTagFactory();
 
 	FOURCC GetServiceType();
 	const char* GetServiceName();
