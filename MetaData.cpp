@@ -28,9 +28,12 @@ If not, see <https://www.gnu.org/licenses/>.
 #include <sstream>
 #include <iomanip>
 #include <strsafe.h>
+#include <map>
 
 #include "agaveCommon.h"
 #include "ID3v2TagExtension.h"
+
+static const size_t TAGNAME_LENGTH = 100;
 
 struct TagInfo
 {
@@ -76,16 +79,39 @@ private:
 
 private:
 	CRITICAL_SECTION	m_CriticalSection;
-	TagInfo				m_TagDataW{};
+	std::map<const wchar_t*, std::wstring>m_Tag;
 	DWORD				m_GetTagTime;
 	std::wstring		m_FileName;
 	bool				m_isValidFile;
+	unsigned long		m_Length;
 
 };
 
 // {50846701-71A9-40CF-9165-587D3A7DB325}
 static const GUID TTA_MetaData_GUID =
 { 0x50846701, 0x71a9, 0x40cf, { 0x91, 0x65, 0x58, 0x7d, 0x3a, 0x7d, 0xb3, 0x25 } };
+
+static const wchar_t tagName[][TAGNAME_LENGTH] =
+{
+	L"length",
+	L"formatinformation",
+	L"type",
+	L"family",
+	L"lossless",
+	L"title",
+	L"artist",
+	L"albumartist",
+	L"comment",
+	L"album",
+	L"year",
+	L"genre",
+	L"track",
+	L"composer",
+	L"publisher",
+	L"disc",
+	L"bpm",
+	L"bitrate",
+};
 
 TTA_MetaData::TTA_MetaData() : svc_metaTag()
 {
@@ -106,21 +132,6 @@ void TTA_MetaData::FlushCache()
 	::EnterCriticalSection(&m_CriticalSection);
 
 	m_GetTagTime = 0;
-
-	m_TagDataW.Length = 0;
-	m_TagDataW.Format = L"";
-	m_TagDataW.Title = L"";
-	m_TagDataW.Artist = L"";
-	m_TagDataW.Comment = L"";
-	m_TagDataW.Album = L"";
-	m_TagDataW.AlbumArtist = L"";
-	m_TagDataW.Year = L"";
-	m_TagDataW.Genre = L"";
-	m_TagDataW.Track = L"";
-	m_TagDataW.Composer = L"";
-	m_TagDataW.Publisher = L"";
-	m_TagDataW.Disc = L"";
-	m_TagDataW.BPM = L"";
 
 	m_FileName = L"";
 
@@ -159,6 +170,8 @@ int TTA_MetaData::isOurFile(const wchar_t* filename)
 
 int TTA_MetaData::metaTag_open(const wchar_t* filename)
 {
+	::EnterCriticalSection(&m_CriticalSection);
+
 	std::wstring fn(filename);
 
 	if (!fn.compare(m_FileName))
@@ -167,6 +180,7 @@ int TTA_MetaData::metaTag_open(const wchar_t* filename)
 
 		if (!TTAFile.isValid())
 		{
+			::LeaveCriticalSection(&m_CriticalSection);
 			return 0;
 		}
 		else
@@ -174,7 +188,7 @@ int TTA_MetaData::metaTag_open(const wchar_t* filename)
 			m_isValidFile = true;
 		}
 
-		m_TagDataW.Length = static_cast<unsigned long>(TTAFile.audioProperties()->lengthInMilliseconds());
+		m_Length = static_cast<unsigned long>(TTAFile.audioProperties()->lengthInMilliseconds());
 
 		int Lengthbysec = TTAFile.audioProperties()->lengthInSeconds();
 		int hour = Lengthbysec / 3600;
@@ -209,40 +223,42 @@ int TTA_MetaData::metaTag_open(const wchar_t* filename)
 			<< L"kbit/s\nNum. of Chan.\t: " << TTAFile.audioProperties()->channels()
 			<< L"(" << channel_designation
 			<< L")\nLength\t\t: " << second.str();
-		m_TagDataW.Format = ttainfo_temp.str();
-
-		m_TagDataW.bitrate = std::to_wstring(static_cast<long long>(TTAFile.audioProperties()->bitrate()));
+		m_Tag.insert(std::make_pair(L"formatinformation", ttainfo_temp.str()));
+		m_Tag.insert(std::make_pair(L"bitrate", std::to_wstring(static_cast<long long>(TTAFile.audioProperties()->bitrate()))));
+		m_Tag.insert(std::make_pair(L"type", std::wstring(L"0")));
+		m_Tag.insert(std::make_pair(L"family", std::wstring(L"The True Audio File")));
+		m_Tag.insert(std::make_pair(L"lossless", std::wstring(L"1")));
 
 		if (nullptr != TTAFile.ID3v2Tag())
 		{
 			ID3v2TagExtension* Tag_ex = static_cast<ID3v2TagExtension*>(TTAFile.ID3v2Tag());
-			m_TagDataW.Title = Tag_ex->title().toCWString();
-			m_TagDataW.Artist = Tag_ex->artist().toCWString();
-			m_TagDataW.Album = Tag_ex->album().toCWString();
-			m_TagDataW.Comment = Tag_ex->comment().toCWString();
-			m_TagDataW.Genre = Tag_ex->genre().toCWString();
-			m_TagDataW.Year = Tag_ex->stringYear().toCWString();
-			m_TagDataW.Track = Tag_ex->stringTrack().toCWString();
-			m_TagDataW.AlbumArtist = Tag_ex->albumArtist().toCWString();
-			m_TagDataW.Composer = Tag_ex->composers().toCWString();
-			m_TagDataW.Publisher = Tag_ex->publisher().toCWString();
-			m_TagDataW.Disc = Tag_ex->disc().toCWString();
-			m_TagDataW.BPM = Tag_ex->BPM().toCWString();
+			m_Tag.insert(std::make_pair(L"title", Tag_ex->title().toCWString()));
+			m_Tag.insert(std::make_pair(L"artist", Tag_ex->artist().toCWString()));
+			m_Tag.insert(std::make_pair(L"album", Tag_ex->album().toCWString()));
+			m_Tag.insert(std::make_pair(L"comment", Tag_ex->comment().toCWString()));
+			m_Tag.insert(std::make_pair(L"genre", Tag_ex->genre().toCWString()));
+			m_Tag.insert(std::make_pair(L"year", Tag_ex->stringYear().toCWString()));
+			m_Tag.insert(std::make_pair(L"track", Tag_ex->stringTrack().toCWString()));
+			m_Tag.insert(std::make_pair(L"albumartist", Tag_ex->albumArtist().toCWString()));
+			m_Tag.insert(std::make_pair(L"composer", Tag_ex->composers().toCWString()));
+			m_Tag.insert(std::make_pair(L"publisher", Tag_ex->publisher().toCWString()));
+			m_Tag.insert(std::make_pair(L"disc", Tag_ex->disc().toCWString()));
+			m_Tag.insert(std::make_pair(L"bpm", Tag_ex->BPM().toCWString()));
 
 		}
 		else if (nullptr != TTAFile.ID3v1Tag())
 		{
 			std::wstringstream temp_year;
 			std::wstringstream temp_track;
-			m_TagDataW.Title = TTAFile.ID3v1Tag()->title().toCWString();
-			m_TagDataW.Artist = TTAFile.ID3v1Tag()->artist().toCWString();
-			m_TagDataW.Comment = TTAFile.ID3v1Tag()->comment().toCWString();
-			m_TagDataW.Album = TTAFile.ID3v1Tag()->album().toCWString();
+			m_Tag.insert(std::make_pair(L"title", TTAFile.ID3v1Tag()->title().toCWString()));
+			m_Tag.insert(std::make_pair(L"artist", TTAFile.ID3v1Tag()->artist().toCWString()));
+			m_Tag.insert(std::make_pair(L"comment", TTAFile.ID3v1Tag()->comment().toCWString()));
+			m_Tag.insert(std::make_pair(L"album", TTAFile.ID3v1Tag()->album().toCWString()));
 			temp_year << TTAFile.ID3v1Tag()->year();
-			m_TagDataW.Year = temp_year.str();
-			m_TagDataW.Genre = TTAFile.ID3v1Tag()->genre().toCWString();
+			m_Tag.insert(std::make_pair(L"year", temp_year.str()));
+			m_Tag.insert(std::make_pair(L"genre", TTAFile.ID3v1Tag()->genre().toCWString()));
 			temp_track << TTAFile.ID3v1Tag()->track();
-			m_TagDataW.Track = temp_track.str();
+			m_Tag.insert(std::make_pair(L"track", temp_track.str()));
 
 		}
 		else
@@ -256,105 +272,50 @@ int TTA_MetaData::metaTag_open(const wchar_t* filename)
 		// Do nothing
 	}
 
+	::LeaveCriticalSection(&m_CriticalSection);
+
 	return 1;
 
 }
 
 void TTA_MetaData::metaTag_close()
 {
-	// Do nothing
+	// Do nothing Now.
 }
 
-const wchar_t* TTA_MetaData::enumSupportedTag(int n, int* datatype = NULL)
+const wchar_t* TTA_MetaData::enumSupportedTag(int n, int* datatype)
 {
-	if (_stricmp(Metadata, "length") == 0)
-	{
-		_ultow_s(m_TagDataW.Length, dest, destlen, 10);
-		RetCode = 1;
-	}
-	else if (_stricmp(Metadata, "formatinformation") == 0)
-	{
-		wcsncpy_s(dest, destlen, m_TagDataW.Format.c_str(), _TRUNCATE);
-		RetCode = 1;
-	}
-	else if (_stricmp(Metadata, "type") == 0)
-	{
-		Buff[0] = '0';
-		Buff[1] = 0;
-		wcsncpy_s(dest, destlen, Buff, _TRUNCATE);
-		RetCode = 1;
-	}
-	else if (_stricmp(Metadata, "family") == 0)
-	{
-		wcsncpy_s(dest, destlen, L"The True Audio File", _TRUNCATE);
-		RetCode = 1;
-	}
-	else if (_stricmp(Metadata, "lossless") == 0)
-	{
-		Buff[0] = '1';
-		wcsncpy_s(dest, destlen, Buff, _TRUNCATE);
-		RetCode = 1;
-	}
-	else if (_stricmp(Metadata, "title") == 0)
-	{
-		wcsncpy_s(dest, destlen, m_TagDataW.Title.c_str(), _TRUNCATE);
-		RetCode = 1;
-	}
-	else if (_stricmp(Metadata, "artist") == 0)
-	{
-		wcsncpy_s(dest, destlen, m_TagDataW.Artist.c_str(), _TRUNCATE);
-		RetCode = 1;
-	}
-	else if (_stricmp(Metadata, "albumartist") == 0)
-	{
-		wcsncpy_s(dest, destlen, m_TagDataW.AlbumArtist.c_str(), _TRUNCATE);
-		RetCode = 1;
-	}
-	else if (_stricmp(Metadata, "comment") == 0)
-	{
-		wcsncpy_s(dest, destlen, m_TagDataW.Comment.c_str(), _TRUNCATE);
-		RetCode = 1;
-	}
-	else if (_stricmp(Metadata, "album") == 0)
-	{
-		wcsncpy_s(dest, destlen, m_TagDataW.Album.c_str(), _TRUNCATE);
-		RetCode = 1;
-	}
-	else if (_stricmp(Metadata, "year") == 0)
-	{
-		wcsncpy_s(dest, destlen, m_TagDataW.Year.c_str(), _TRUNCATE);
-		RetCode = 1;
-	}
-	else if (_stricmp(Metadata, "genre") == 0)
-	{
-		wcsncpy_s(dest, destlen, m_TagDataW.Genre.c_str(), _TRUNCATE);
-		RetCode = 1;
-	}
-	else if (_stricmp(Metadata, "track") == 0)
-	{
-		wcsncpy_s(dest, destlen, m_TagDataW.Track.c_str(), _TRUNCATE);
-		RetCode = 1;
-	}
-	else if (_stricmp(Metadata, "composer") == 0)
-	{
-		wcsncpy_s(dest, destlen, m_TagDataW.Composer.c_str(), _TRUNCATE);
-		RetCode = 1;
-	}
-	else if (_stricmp(Metadata, "publisher") == 0)
-	{
-		wcsncpy_s(dest, destlen, m_TagDataW.Publisher.c_str(), _TRUNCATE);
-		RetCode = 1;
-	}
-	else if (_stricmp(Metadata, "disc") == 0)
-	{
-		wcsncpy_s(dest, destlen, m_TagDataW.Disc.c_str(), _TRUNCATE);
-		RetCode = 1;
-	}
-	else if (_stricmp(Metadata, "bpm") == 0)
-	{
-		wcsncpy_s(dest, destlen, m_TagDataW.BPM.c_str(), _TRUNCATE);
-		RetCode = 1;
-	}
-	else if (_stricmp(Metadata, "bitrate") == 0)
+	return tagName[0];
+}
 
+int TTA_MetaData::getTagSize(const wchar_t* tag, size_t* sizeBytes)
+{
+	if (m_Tag.contains(tag))
+	{
+		*sizeBytes = static_cast<size_t>(m_Tag.at(tag).length() * sizeof(wchar_t));
+	}
+	else
+	{
+		*sizeBytes = 0;
+		return 0;
+	}
+	return 1;
+}
+
+int TTA_MetaData::getMetaData(const wchar_t* tag, uint8_t* buf, int buflenBytes, int datatype)
+{
+	if (m_Tag.contains(tag))
+	{
+		memcpy_s(buf, buflenBytes, reinterpret_cast<const uint8_t *>(m_Tag.at(tag).c_str()), static_cast<rsize_t>(m_Tag.at(tag).length() * sizeof(wchar_t)));
+	}
+	else
+	{
+		return 0;
+	}
+	return 1;
+}
+
+int TTA_MetaData::setMetaData(const wchar_t* tag, const uint8_t* buf, int buflenBytes, int datatype)
+{
+	m_Tag[tag] = reinterpret_cast<const wchar_t *>(buf);
 }
