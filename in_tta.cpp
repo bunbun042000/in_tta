@@ -82,16 +82,13 @@ void setvolume(int volume);
 void setpan(int pan);
 void eq_set(int on, char data[10], int preamp);
 
-char description[] = "TTA Audio Decoder " PLUGIN_VERSION_CHAR;			// description of module, with version string
-char FileExtensions[] = "TTA\0TTA Audio File (*.TTA)\0";		// "mp3\0Layer 3 MPEG\0mp2\0Layer 2 MPEG\0mpg\0Layer 1 MPEG\0"
-
 In_Module mod =
 {
 	IN_VER,
-	description,
+	const_cast<char *>("TTA Audio Decoder " PLUGIN_VERSION_CHAR),			// description of module, with version string	description,
 	nullptr,		// hMainWindow
 	nullptr,		// hDllInstance
-	FileExtensions,
+	const_cast<char *>("TTA\0TTA Audio File (*.TTA)\0"),				// "mp3\0Layer 3 MPEG\0mp2\0Layer 2 MPEG\0mpg\0Layer 1 MPEG\0"
 	1,			// is_seekable
 	1,			// uses output
 	config,
