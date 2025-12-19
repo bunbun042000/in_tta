@@ -20,6 +20,7 @@ If not, see <https://www.gnu.org/licenses/>.
 
 #if !defined(AFX_MediaLibrary_H__997DC726_50DB_46B4_A156_DB5E92EC2BE8__INCLUDED_)
 #define AFX_MediaLibrary_H__997DC726_50DB_46B4_A156_DB5E92EC2BE8__INCLUDED_
+#include <map>
 
 #include <Winamp/wa_ipc.h>
 
@@ -31,25 +32,6 @@ If not, see <https://www.gnu.org/licenses/>.
 
 static const __int32 MAX_MUSICTEXT = 512;
 static const __int32 MAX_YEAR = 10;
-
-struct TagInfo
-{
-	unsigned long	Length;
-	std::wstring	Format;
-	std::wstring	Title;
-	std::wstring	Artist;
-	std::wstring	AlbumArtist;
-	std::wstring	Comment;
-	std::wstring	Album;
-	std::wstring	Year;
-	std::wstring	Genre;
-	std::wstring	Track;
-	std::wstring	Composer;
-	std::wstring	Publisher;
-	std::wstring	Disc;
-	std::wstring	BPM;
-	std::wstring    bitrate;
-};
 
 class MediaLibrary
 {
@@ -65,7 +47,8 @@ public:
 
 private:
 	CRITICAL_SECTION	m_CriticalSection;
-	TagInfo				m_TagDataW {};
+	std::map<std::string, std::wstring>m_Tag;
+	unsigned long		m_Length;
 	DWORD				m_GetTagTime;
 	std::wstring		m_FileName;
 	bool				m_isValidFile;
