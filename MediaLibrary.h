@@ -30,6 +30,59 @@ If not, see <https://www.gnu.org/licenses/>.
 
 #include "in_tta.h"
 
+struct tagNameSet
+{
+	std::string str;
+	std::wstring wstr;
+};
+
+
+static struct tagNameSet tagName[] =
+{
+	{ "length", L"length" },
+	{ "formatinformation", L"formatinformation" },
+	{ "type", L"type" },
+	{ "family", L"family" },
+	{ "lossless", L"lossless" },
+	{ "title", L"title" },
+	{ "artist", L"artist" },
+	{ "albumartist", L"albumartist" },
+	{ "comment", L"comment" },
+	{ "album", L"album" },
+	{ "year", L"year" },
+	{ "genre", L"genre" },
+	{ "track", L"track" },
+	{ "composer", L"composer" },
+	{ "publisher", L"publisher" },
+	{ "disc", L"disc" },
+	{ "bpm", L"bpm" },
+	{ "bitrate", L"bitrate" },
+};
+
+enum
+{
+	METATAG_LENGTH,
+	METATAG_FORMATINFORMATION,
+	METATAG_TYPE,
+	METATAG_FAMILY,
+	METATAG_LOSSLESS,
+	METATAG_TITLE,
+	METATAG_ARTIST,
+	METATAG_ALBUMARTIST,
+	METATAG_COMMENT,
+	METATAG_ALBUM,
+	METATAG_YEAR,
+	METATAG_GENRE,
+	METATAG_TRACK,
+	METATAG_COMPOSER,
+	METATAG_PUBLISHER,
+	METATAG_DISC,
+	METATAG_BPM,
+	METATAG_BITRATE,
+};
+
+const __int32 METATAG_TAGTYPE_MAX = 18;
+
 static const __int32 MAX_MUSICTEXT = 512;
 static const __int32 MAX_YEAR = 10;
 
@@ -42,6 +95,8 @@ public:
 	__int32  SetExtendedFileInfo(const wchar_t *fn, const char *Metadata, const wchar_t *val);
 	__int32  WriteExtendedFileInfo();
 	void FlushCache();
+	bool SetFileName(const std::wstring fn);
+	size_t GetTagLength(const char *Metadata);
 	std::wstring GetCurrentFileName() { return m_FileName; };
 	bool	isValid() const { return m_isValidFile; };
 

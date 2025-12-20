@@ -168,7 +168,8 @@
     <ClCompile Include="in_tta.cpp" />
     <ClCompile Include="MediaLibrary.cpp" />
     <ClCompile Include="ID3v2TagExtension.cpp" />
-    <ClCompile Include="MetaData.cpp" />
+    <ClCompile Include="MetaTag.cpp" />
+    <ClCompile Include="MetaTagFactory.cpp" />
     <ClCompile Include="wasabi.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -177,7 +178,8 @@
     <ClInclude Include="DecodeFile.h" />
     <ClInclude Include="in_tta.h" />
     <ClInclude Include="MediaLibrary.h" />
-    <ClInclude Include="MetaData.h" />
+    <ClInclude Include="MetaTag.h" />
+    <ClInclude Include="MetaTagFactory.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ID3v2TagExtension.h" />
     <ClInclude Include="wasabi.h" />

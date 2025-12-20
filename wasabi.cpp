@@ -27,7 +27,8 @@ If not, see <https://www.gnu.org/licenses/>.
 #include <Winamp/wa_ipc.h>
 
 #include "AlbumArt.h"
-#include "MetaData.h"
+#include "MetaTag.h"
+#include "MetaTagFactory.h"
 
 extern In_Module mod; // TODO: change if you called yours something else
 
@@ -38,7 +39,7 @@ static api_service* WASABI_API_SVC = 0;
 static api_memmgr* WASABI_API_MEMMGR = 0;
 
 static AlbumArtFactory albumArtFactory;
-static MetaTagFactory metaTagFactory;
+static TTA_metaTagFactory metaTagFactory;
 
 void Wasabi_Init()
 {

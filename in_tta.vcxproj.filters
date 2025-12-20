@@ -16,13 +16,16 @@
     <ClCompile Include="ID3v2TagExtension.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MetaData.cpp">
+    <ClCompile Include="MetaTag.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="agaveCommon.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="wasabi.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MetaTagFactory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -51,7 +54,10 @@
     <ClInclude Include="wasabi.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MetaData.h">
+    <ClInclude Include="MetaTag.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MetaTagFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

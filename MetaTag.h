@@ -18,29 +18,17 @@ You should have received a copy of the GNU General Public License along with enc
 If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef METADATA_H_INCLUDED
-#define METADATA_H_INCLUDED
-
 #include <agave/Metadata/svc_metatag.h>
+#include <Wasabi/bfc/dispatch.h>
+#include "MediaLibrary.h"
+
+#ifndef METATAG_H_INCLUDED
+#define METATAG_H_INCLUDED
 
 
-class MetaTagFactory : public waServiceFactory
-{
-public:
-	virtual ~MetaTagFactory();
-
-	FOURCC GetServiceType();
-	const char* GetServiceName();
-	GUID GetGUID();
-	void* GetInterface(int global_lock);
-	int SupportNonLockingInterface();
-	int ReleaseInterface(void* ifc);
-	const char* GetTestString();
-	int ServiceNotify(int msg, int param1, int param2);
-
-protected:
-	RECVS_DISPATCH;
-};
+// {50846701-71A9-40CF-9165-587D3A7DB325}
+static const GUID TTA_metaTag_GUID =
+{ 0x50846701, 0x71a9, 0x40cf, { 0x91, 0x65, 0x58, 0x7d, 0x3a, 0x7d, 0xb3, 0x25 } };
 
 class TTA_metaTag : public svc_metaTag
 {
@@ -48,6 +36,7 @@ public:
 	TTA_metaTag();
 	virtual ~TTA_metaTag();
 
+	const static GUID getServiceGUID() { return TTA_metaTag_GUID; }
 	static FOURCC getServiceType() { return svc_metaTag::SERVICETYPE; }
 	const wchar_t* getName();	// i.e. "ID3v2" or something
 	GUID getGUID(); // this needs to be the same GUID that you use when registering your service factory
@@ -63,20 +52,12 @@ public:
 	int setMetaData(const wchar_t* tag, const uint8_t* buf, int buflenBytes, int datatype = METATYPE_STRING);
 
 private:
-	void FlushCache();
-
-private:
-	CRITICAL_SECTION	m_CriticalSection;
-	std::map<const std::wstring, std::wstring>m_Tag;
-	DWORD				m_GetTagTime;
+	MediaLibrary	    m_MediaLibrary;
 	std::wstring		m_FileName;
-	bool				m_isValidFile;
-	unsigned long		m_Length;
-	bool				m_isChanged;
 
 protected:
 	RECVS_DISPATCH;
 };
 
-#endif // #ifndef METADATA_H_INCLUDED
+#endif // #ifndef METATAG_H_INCLUDED
 
