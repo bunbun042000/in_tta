@@ -166,7 +166,7 @@
     <ClCompile Include="AlbumArt.cpp" />
     <ClCompile Include="DecodeFile.cpp" />
     <ClCompile Include="in_tta.cpp" />
-    <ClCompile Include="MediaLibrary.cpp" />
+    <ClCompile Include="ttaTag.cpp" />
     <ClCompile Include="ID3v2TagExtension.cpp" />
     <ClCompile Include="MetaTag.cpp" />
     <ClCompile Include="MetaTagFactory.cpp" />
@@ -177,7 +177,7 @@
     <ClInclude Include="AlbumArt.h" />
     <ClInclude Include="DecodeFile.h" />
     <ClInclude Include="in_tta.h" />
-    <ClInclude Include="MediaLibrary.h" />
+    <ClInclude Include="ttaTag.h" />
     <ClInclude Include="MetaTag.h" />
     <ClInclude Include="MetaTagFactory.h" />
     <ClInclude Include="resource.h" />

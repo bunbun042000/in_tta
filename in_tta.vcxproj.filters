@@ -7,7 +7,7 @@
     <ClCompile Include="in_tta.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MediaLibrary.cpp">
+    <ClCompile Include="ttaTag.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DecodeFile.cpp">
@@ -33,7 +33,7 @@
     <ClInclude Include="AlbumArt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MediaLibrary.h">
+    <ClInclude Include="ttaTag.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">

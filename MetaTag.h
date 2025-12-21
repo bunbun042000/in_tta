@@ -18,13 +18,13 @@ You should have received a copy of the GNU General Public License along with enc
 If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <agave/Metadata/svc_metatag.h>
-#include <Wasabi/bfc/dispatch.h>
-#include "MediaLibrary.h"
-
 #ifndef METATAG_H_INCLUDED
 #define METATAG_H_INCLUDED
 
+#include <agave/Metadata/svc_metatag.h>
+#include <Wasabi/bfc/dispatch.h>
+
+#include "ttaTag.h"
 
 // {50846701-71A9-40CF-9165-587D3A7DB325}
 static const GUID TTA_metaTag_GUID =
@@ -52,7 +52,7 @@ public:
 	int setMetaData(const wchar_t* tag, const uint8_t* buf, int buflenBytes, int datatype = METATYPE_STRING);
 
 private:
-	MediaLibrary	    m_MediaLibrary;
+	ttaTag	    m_ttaTag;
 	std::wstring		m_FileName;
 
 protected:

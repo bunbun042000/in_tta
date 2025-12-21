@@ -18,9 +18,11 @@ You should have received a copy of the GNU General Public License along with enc
 If not, see <https://www.gnu.org/licenses/>.
 */
 
-#if !defined(AFX_MediaLibrary_H__997DC726_50DB_46B4_A156_DB5E92EC2BE8__INCLUDED_)
-#define AFX_MediaLibrary_H__997DC726_50DB_46B4_A156_DB5E92EC2BE8__INCLUDED_
+#if !defined(AFX_ttaTag_H__997DC726_50DB_46B4_A156_DB5E92EC2BE8__INCLUDED_)
+#define AFX_ttaTag_H__997DC726_50DB_46B4_A156_DB5E92EC2BE8__INCLUDED_
+
 #include <map>
+#include <string>
 
 #include <Winamp/wa_ipc.h>
 
@@ -29,35 +31,6 @@ If not, see <https://www.gnu.org/licenses/>.
 #include <taglib/attachedpictureframe.h>
 
 #include "in_tta.h"
-
-struct tagNameSet
-{
-	std::string str;
-	std::wstring wstr;
-};
-
-
-static struct tagNameSet tagName[] =
-{
-	{ "length", L"length" },
-	{ "formatinformation", L"formatinformation" },
-	{ "type", L"type" },
-	{ "family", L"family" },
-	{ "lossless", L"lossless" },
-	{ "title", L"title" },
-	{ "artist", L"artist" },
-	{ "albumartist", L"albumartist" },
-	{ "comment", L"comment" },
-	{ "album", L"album" },
-	{ "year", L"year" },
-	{ "genre", L"genre" },
-	{ "track", L"track" },
-	{ "composer", L"composer" },
-	{ "publisher", L"publisher" },
-	{ "disc", L"disc" },
-	{ "bpm", L"bpm" },
-	{ "bitrate", L"bitrate" },
-};
 
 enum
 {
@@ -81,16 +54,18 @@ enum
 	METATAG_BITRATE,
 };
 
-const __int32 METATAG_TAGTYPE_MAX = 18;
+extern std::wstring tagName[];
 
-static const __int32 MAX_MUSICTEXT = 512;
-static const __int32 MAX_YEAR = 10;
+extern const __int32 METATAG_TAGTYPE_MAX;
 
-class MediaLibrary
+extern const __int32 MAX_MUSICTEXT;
+extern const __int32 MAX_YEAR;
+
+class ttaTag
 {
 public:
-	MediaLibrary();
-	virtual ~MediaLibrary();
+	ttaTag();
+	virtual ~ttaTag();
 	__int32  GetExtendedFileInfo(const wchar_t *fn, const char *Metadata, wchar_t *dest, size_t destlen);
 	__int32  SetExtendedFileInfo(const wchar_t *fn, const char *Metadata, const wchar_t *val);
 	__int32  WriteExtendedFileInfo();
@@ -102,7 +77,7 @@ public:
 
 private:
 	CRITICAL_SECTION	m_CriticalSection;
-	std::map<std::string, std::wstring>m_Tag;
+	std::map<std::wstring, std::wstring>m_Tag;
 	unsigned long		m_Length;
 	DWORD				m_GetTagTime;
 	std::wstring		m_FileName;
@@ -112,4 +87,4 @@ private:
 
 };
 
-#endif // !defined(AFX_MediaLibrary_H__997DC726_50DB_46B4_A156_DB5E92EC2BE8__INCLUDED_)
+#endif // !defined(AFX_ttaTag_H__997DC726_50DB_46B4_A156_DB5E92EC2BE8__INCLUDED_)

@@ -37,9 +37,8 @@ If not, see <https://www.gnu.org/licenses/>.
 #include <string.h>
 
 #include "agaveCommon.h"
-#include "ID3v2TagExtension.h"
 #include "MetaTag.h"
-#include "MediaLibrary.h"
+#include "ttaTag.h"
 
 
 TTA_metaTag::TTA_metaTag() : svc_metaTag()
@@ -81,7 +80,7 @@ int TTA_metaTag::isOurFile(const wchar_t* filename)
 
 int TTA_metaTag::metaTag_open(const wchar_t* filename)
 {
-	if (m_MediaLibrary.SetFileName(filename))
+	if (m_ttaTag.SetFileName(filename))
 	{
 		return METATAG_SUCCESS;
 	}
@@ -111,7 +110,7 @@ int TTA_metaTag::getTagSize(const wchar_t* tag, size_t* sizeBytes)
 	bool isExist = false;
 	for (i = 0; i < METATAG_TAGTYPE_MAX; i++)
 	{
-		if (wcscmp(tag, tagName[i].wstr.c_str()) == 0)
+		if (wcscmp(tag, tagName[i].c_str()) == 0)
 		{
 			isExist = true;
 			break;
@@ -122,10 +121,21 @@ int TTA_metaTag::getTagSize(const wchar_t* tag, size_t* sizeBytes)
 		}
 	}
 
+
 	if (isExist)
 	{
-		*sizeBytes = m_MediaLibrary.GetTagLength(tagName[i].str.c_str());
-		return METATAG_SUCCESS;
+		char *temp = new char[MAX_MUSICTEXT];
+		size_t size;
+		wcstombs_s(&size, temp, MAX_MUSICTEXT, tag, MAX_MUSICTEXT);
+		if (size == -1 || size == MAX_MUSICTEXT)
+		{
+			return METATAG_FAILED;
+		}
+		else
+		{
+			*sizeBytes = m_ttaTag.GetTagLength(temp);
+			return METATAG_SUCCESS;
+		}
 	}
 	else
 	{
@@ -141,7 +151,7 @@ int TTA_metaTag::getMetaData(const wchar_t* tag, uint8_t* buf, int buflenBytes, 
 	bool isExist = false;
 	for (i = 0; i < METATAG_TAGTYPE_MAX; i++)
 	{
-		if (wcscmp(tag, tagName[i].wstr.c_str()) == 0)
+		if (wcscmp(tag, tagName[i].c_str()) == 0)
 		{
 			isExist = true;
 			break;
@@ -154,7 +164,18 @@ int TTA_metaTag::getMetaData(const wchar_t* tag, uint8_t* buf, int buflenBytes, 
 
 	if (isExist)
 	{
-		m_MediaLibrary.GetExtendedFileInfo(m_FileName.c_str(), tagName[i].str.c_str(), reinterpret_cast<wchar_t *>(buf), buflenBytes);
+		char *temp = new char[MAX_MUSICTEXT];
+		size_t size;
+		wcstombs_s(&size, temp, MAX_MUSICTEXT, tag, MAX_MUSICTEXT);
+		if (size == -1 || size == MAX_MUSICTEXT)
+		{
+			return METATAG_FAILED;
+		}
+		else
+		{
+			m_ttaTag.GetExtendedFileInfo(m_FileName.c_str(), temp, reinterpret_cast<wchar_t*>(buf), buflenBytes);
+
+		}
 	}
 	else
 	{

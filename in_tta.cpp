@@ -33,7 +33,7 @@ If not, see <https://www.gnu.org/licenses/>.
 
 #include "wasabi.h"
 #include "AlbumArt.h"
-#include "MediaLibrary.h"
+#include "ttaTag.h"
 #include "in_tta.h"
 
 #include <Winamp/in2.h>
@@ -61,8 +61,8 @@ static volatile int killDecoderThread = 0;
 static alignas(16) DecodeFile transcode_ttafile;
 
 // for MetaData static variables
-MediaLibrary m_ReadTag;
-MediaLibrary m_WriteTag;
+ttaTag m_ReadTag;
+ttaTag m_WriteTag;
 
 void config(HWND hwndParent);
 void about(HWND hwndParent);
