@@ -64,8 +64,6 @@ TTAint64 CALLBACK seek_callback(TTA_io_callback *io, TTAint64 offset)
 DecodeFile::DecodeFile() : m_FileName(L""), m_paused(0), m_seek_needed(1), m_decode_pos_ms(0), m_bitrate(0), m_Filesize(0),
 m_st_state(0), m_decoderFileHANDLE(INVALID_HANDLE_VALUE), m_iocb_wrapper{}, m_ttadec_mem{}, m_TTA(nullptr), m_tta_info{}, m_signature(m_sig_number)
 {
-<<<<<<< HEAD
-
 	m_iocb_wrapper.handle = INVALID_HANDLE_VALUE;
 	m_iocb_wrapper.iocb.read = nullptr;
 	m_iocb_wrapper.iocb.seek = nullptr;
@@ -74,17 +72,6 @@ m_st_state(0), m_decoderFileHANDLE(INVALID_HANDLE_VALUE), m_iocb_wrapper{}, m_tt
 	::InitializeCriticalSection(&m_CriticalSection);
 }
 
-=======
-	m_iocb_wrapper.handle = INVALID_HANDLE_VALUE;
-	m_iocb_wrapper.iocb.read = nullptr;
-	m_iocb_wrapper.iocb.seek = nullptr;
-	m_iocb_wrapper.iocb.write = nullptr;
-
-	::InitializeCriticalSection(&m_CriticalSection);
-}
-
-
->>>>>>> d0a59e7 (- Add prefix "m_" with the member variable names.)
 DecodeFile::~DecodeFile()
 {
 	::EnterCriticalSection(&m_CriticalSection);
@@ -157,11 +144,7 @@ int DecodeFile::SetFileName(const wchar_t *filename)
 		// Do nothing
 	}
 
-<<<<<<< HEAD
 	m_Filesize = static_cast<long>(::GetFileSize(m_decoderFileHANDLE, nullptr));
-=======
-	m_Filesize = ::GetFileSize(m_decoderFileHANDLE, nullptr);
->>>>>>> d0a59e7 (- Add prefix "m_" with the member variable names.)
 
 	m_iocb_wrapper.handle = m_decoderFileHANDLE;
 	m_iocb_wrapper.iocb.read = &read_callback;
@@ -179,11 +162,7 @@ int DecodeFile::SetFileName(const wchar_t *filename)
 
 	try 
 	{
-<<<<<<< HEAD
-		m_TTA = new (&m_ttadec_mem) tta::tta_decoder(reinterpret_cast<TTA_io_callback *>(& m_iocb_wrapper));
-=======
 		m_TTA = new (&m_ttadec_mem) tta::tta_decoder(reinterpret_cast<TTA_io_callback *>(&m_iocb_wrapper));
->>>>>>> d0a59e7 (- Add prefix "m_" with the member variable names.)
 		m_TTA->init_get_info(&m_tta_info, 0);
 	}
 
