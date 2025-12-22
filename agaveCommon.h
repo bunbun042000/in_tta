@@ -21,7 +21,7 @@ If not, see <https://www.gnu.org/licenses/>.
 #ifndef AGAVECOMMON_H_INCLUDED
 #define AGAVECOMMON_H_INCLUDED
 
-const wchar_t* GetLastCharactercW(const wchar_t* string);
+const wchar_t* GetLastCharacterW(const wchar_t* string);
 const wchar_t* scanstr_backW(const wchar_t* str, const wchar_t* toscan, const wchar_t* defval);
 const wchar_t* extensionW(const wchar_t* fn);
 

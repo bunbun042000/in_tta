@@ -21,7 +21,7 @@ If not, see <https://www.gnu.org/licenses/>.
 #include "agaveCommon.h"
 #include <Winamp/wa_ipc.h>
 
-const wchar_t* GetLastCharactercW(const wchar_t* string)
+const wchar_t* GetLastCharacterW(const wchar_t* string)
 {
 	if (!string || !*string)
 	{
@@ -37,7 +37,7 @@ const wchar_t* GetLastCharactercW(const wchar_t* string)
 
 const wchar_t* scanstr_backW(const wchar_t* str, const wchar_t* toscan, const wchar_t* defval)
 {
-	const wchar_t* s = GetLastCharactercW(str);
+	const wchar_t* s = GetLastCharacterW(str);
 
 	if (!str[0])
 	{
