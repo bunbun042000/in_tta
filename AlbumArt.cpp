@@ -1,4 +1,4 @@
-/*
+﻿/*
 The ttaplugins-winamp project.
 Copyright (C) 2005-2026 Yamagata Fumihiro
 
@@ -399,6 +399,7 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 			{
 				// Do nothing
 			}
+
 			if (nullptr != *mime_type)
 			{
 				Wasabi_Free(*mime_type);

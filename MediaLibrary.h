@@ -1,4 +1,4 @@
-/*
+﻿/*
 The ttaplugins-winamp project.
 Copyright (C) 2005-2026 Yamagata Fumihiro
 

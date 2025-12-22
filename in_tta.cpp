@@ -1,4 +1,4 @@
-/*
+﻿/*
  * in_tta.c
  *
  * Description:	 TTA input plug-in for Winamp 2
@@ -6,7 +6,7 @@
  * Copyright (c) 2005-2009 Aleksander Djuric. All rights reserved.
  *
  */
-
+ 
  /*
 The ttaplugins-winamp project.
 Copyright (C) 2005-2026 Yamagata Fumihiro
@@ -115,7 +115,7 @@ In_Module mod =
 	nullptr, nullptr,	// dsp
 	eq_set,
 	nullptr,		// setinfo
-	nullptr		// out_mod
+	nullptr			// out_mod
 };
 
 static void tta_error_message(int error, const wchar_t *filename)
@@ -212,6 +212,7 @@ void quit()
 
 void getfileinfo(const wchar_t *file, wchar_t *title, int *length_in_ms)
 {
+
 	wchar_t null_char[] = L"";
 	title = null_char;
 
@@ -280,7 +281,7 @@ int play(const wchar_t *filename)
 	}
 
 	maxlatency = mod.outMod->Open(playing_ttafile.GetSampleRate(),
-		playing_ttafile.GetNumberofChannel(), (int)playing_ttafile.GetOutputBPS(), -1, -1);
+		playing_ttafile.GetNumberofChannel(), static_cast<int>(playing_ttafile.GetOutputBPS()), -1, -1);
 	if (maxlatency < 0)
 	{
 		stop();
@@ -303,7 +304,7 @@ int play(const wchar_t *filename)
 
 	killDecoderThread = 0;
 
-	decoder_handle = CreateThread(NULL, 0, DecoderThread, NULL, 0, &decoder_thread_id);
+	decoder_handle = CreateThread(nullptr, 0, DecoderThread, nullptr, 0, &decoder_thread_id);
 	if (!decoder_handle)
 	{
 		stop();
@@ -525,10 +526,10 @@ DWORD WINAPI __stdcall DecoderThread(void *p)
 			}
 			else
 			{
-				do_vis(pcm_buffer, decoded_samples, (int)playing_ttafile.GetOutputBPS(), playing_ttafile.GetDecodePosMs());
+				do_vis(pcm_buffer, decoded_samples, static_cast<int>(playing_ttafile.GetOutputBPS()), playing_ttafile.GetDecodePosMs());
 				if (mod.dsp_isactive())
 				{
-					decoded_samples = mod.dsp_dosamples(reinterpret_cast<short*>(pcm_buffer), decoded_samples, (int)playing_ttafile.GetOutputBPS(),
+					decoded_samples = mod.dsp_dosamples(reinterpret_cast<short*>(pcm_buffer), decoded_samples, static_cast<int>(playing_ttafile.GetOutputBPS()),
 						playing_ttafile.GetNumberofChannel(), playing_ttafile.GetSampleRate());
 				}
 				else
@@ -536,7 +537,7 @@ DWORD WINAPI __stdcall DecoderThread(void *p)
 					// Do nothing
 				}
 				mod.outMod->Write(reinterpret_cast<char *>(pcm_buffer), decoded_samples * playing_ttafile.GetNumberofChannel()
-					* (int)(playing_ttafile.GetOutputBPS() >> 3));
+					* static_cast<int>(playing_ttafile.GetOutputBPS() >> 3));
 			}
 
 			mod.SetInfo(bitrate, playing_ttafile.GetSampleRate() / 1000, playing_ttafile.GetNumberofChannel(), 1);
@@ -655,7 +656,7 @@ extern "C"
 
 		try
 		{
-			decoded_samples = dec->GetSamples((BYTE *)dest, (size_t)len, &bitrate);
+			decoded_samples = dec->GetSamples(reinterpret_cast<BYTE *>(dest), static_cast<size_t>(len), &bitrate);
 		}
 		catch (DecodeFile_exception &ex)
 		{

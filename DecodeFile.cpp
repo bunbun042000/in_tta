@@ -1,4 +1,4 @@
-/*
+﻿/*
 The ttaplugins-winamp project.
 Copyright (C) 2005-2026 Yamagata Fumihiro
 
@@ -145,7 +145,7 @@ int DecodeFile::SetFileName(const wchar_t *filename)
 		// Do nothing
 	}
 
-	m_Filesize = (long)::GetFileSize(m_decoderFileHANDLE, nullptr);
+	m_Filesize = static_cast<long>(::GetFileSize(m_decoderFileHANDLE, nullptr));
 
 	m_iocb_wrapper.handle = m_decoderFileHANDLE;
 	m_iocb_wrapper.iocb.read = &read_callback;
@@ -189,8 +189,8 @@ int DecodeFile::SetFileName(const wchar_t *filename)
 	m_decode_pos_ms = 0;
 	m_seek_needed = -1;
 
-	// Filesize / (total samples * number of channel) = datasize per sample [byte/sample]
-	// datasize per sample * 8 * samples per sec = bitrate [bit/sec]
+	// m_Filesize / (total samples * number of channel) = datasize per sample [byte/sample]
+	// datasize per sample * 8 * samples per sec = m_bitrate [bit/sec]
 	m_bitrate = (long)(m_Filesize / (m_tta_info.samples * m_tta_info.nch) * 8 * m_tta_info.sps / 1000);
 
 	if (m_TTA->seek_allowed)

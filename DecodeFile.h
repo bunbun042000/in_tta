@@ -1,4 +1,4 @@
-/*
+﻿/*
 The ttaplugins-winamp project.
 Copyright (C) 2005-2026 Yamagata Fumihiro
 
@@ -31,7 +31,7 @@ struct TTA_io_callback_wrapper
 {
 	TTA_io_callback iocb{};
 	HANDLE handle{};
-} ;
+};
 
 class alignas(16) DecodeFile
 {

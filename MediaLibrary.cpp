@@ -1,4 +1,4 @@
-/*
+﻿/*
 The ttaplugins-winamp project.
 Copyright (C) 2005-2026 Yamagata Fumihiro
 
@@ -97,7 +97,7 @@ bool MediaLibrary::GetTagInfo(const std::wstring fn)
 			m_isValidFile = true;
 		}
 
-		m_TagDataW.Length = (unsigned long)(TTAFile.audioProperties()->lengthInMilliseconds());
+		m_TagDataW.Length = static_cast<unsigned long>(TTAFile.audioProperties()->lengthInMilliseconds());
 
 		int Lengthbysec = TTAFile.audioProperties()->lengthInSeconds();
 		int hour = Lengthbysec / 3600;
@@ -495,8 +495,8 @@ int MediaLibrary::WriteExtendedFileInfo()
 			TTAFile.ID3v1Tag()->setArtist(m_TagDataW.Artist);
 			TTAFile.ID3v1Tag()->setAlbum(m_TagDataW.Album);
 			TTAFile.ID3v1Tag()->setComment(m_TagDataW.Comment);
-			TTAFile.ID3v1Tag()->setYear((unsigned int)_wtoi(m_TagDataW.Year.c_str()));
-			TTAFile.ID3v1Tag()->setTrack((unsigned int)_wtoi(m_TagDataW.Track.c_str()));
+			TTAFile.ID3v1Tag()->setYear(static_cast<unsigned int>(_wtoi(m_TagDataW.Year.c_str())));
+			TTAFile.ID3v1Tag()->setTrack(static_cast<unsigned int>(_wtoi(m_TagDataW.Track.c_str())));
 			TTAFile.ID3v1Tag()->setGenre(m_TagDataW.Genre);
 		}
 		else
