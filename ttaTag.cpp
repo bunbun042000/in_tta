@@ -251,9 +251,13 @@ int ttaTag::GetExtendedFileInfo(const wchar_t *fn, const char *Metadata, wchar_t
 			// Do nothing
 		}
 	}
-	else
+	else if (m_isValidFile)
 	{
 		FindTag = true;
+	}
+	else
+	{
+		// Do nothing
 	}
 
 	if (FindTag) {
@@ -325,7 +329,7 @@ int ttaTag::SetExtendedFileInfo(const wchar_t *fn, const char *Metadata, const w
 		FlushCache();
 
 		FindTag = GetTagInfo(fn);
-		if (FindTag)
+		if (FindTag && m_isValidFile)
 		{
 			m_FileName = std::wstring(fn);
 		}
@@ -334,26 +338,13 @@ int ttaTag::SetExtendedFileInfo(const wchar_t *fn, const char *Metadata, const w
 			// Do nothing
 		}
 	}
-	else
+	else if (m_isValidFile)
 	{
 		FindTag = true;
 	}
-
-	if (FindTag)
-	{
-		FindTag = GetTagInfo(fn);
-		if (FindTag)
-		{
-			m_FileName = std::wstring(fn);
-		}
-		else
-		{
-			// Do nothing
-		}
-	}
 	else
 	{
-		FindTag = true;
+		// Do nothing
 	}
 
 	if (FindTag)
@@ -361,6 +352,7 @@ int ttaTag::SetExtendedFileInfo(const wchar_t *fn, const char *Metadata, const w
 		wchar_t temp[MAX_MUSICTEXT];
 		size_t size;
 		mbstowcs_s(&size, temp, MAX_MUSICTEXT, Metadata, MAX_MUSICTEXT);
+
 		if (size == -1 || size == MAX_MUSICTEXT)
 		{
 			// Do nothing
