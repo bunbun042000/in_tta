@@ -164,7 +164,7 @@
   <ItemGroup>
     <ClCompile Include="agaveCommon.cpp" />
     <ClCompile Include="AlbumArt.cpp" />
-    <ClCompile Include="DecodeFile.cpp" />
+    <ClCompile Include="TTADecoder.cpp" />
     <ClCompile Include="in_tta.cpp" />
     <ClCompile Include="ttaTag.cpp" />
     <ClCompile Include="ID3v2TagExtension.cpp" />
@@ -175,7 +175,7 @@
   <ItemGroup>
     <ClInclude Include="agaveCommon.h" />
     <ClInclude Include="AlbumArt.h" />
-    <ClInclude Include="DecodeFile.h" />
+    <ClInclude Include="TTADecoder.h" />
     <ClInclude Include="in_tta.h" />
     <ClInclude Include="ttaTag.h" />
     <ClInclude Include="MetaTag.h" />

@@ -18,8 +18,8 @@ You should have received a copy of the GNU General Public License along with enc
 If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DECODEFILE_H
-#define DECODEFILE_H
+#ifndef TTADECODER_H
+#define TTADECODER_H
 
 #include <libtta.h>
 #include "in_tta.h"
@@ -33,7 +33,7 @@ struct TTA_io_callback_wrapper
 	HANDLE handle{};
 };
 
-class alignas(16) DecodeFile
+class alignas(16) TTADecoder
 {
 private:
 	std::wstring			m_FileName;
@@ -59,8 +59,8 @@ private:
 	CRITICAL_SECTION		m_CriticalSection;
 
 public:
-	DecodeFile();
-	virtual ~DecodeFile();
+	TTADecoder();
+	virtual ~TTADecoder();
 
 	bool			isValid() const { return m_sig_number == m_signature ? true : false; }
 	bool			isDecodable() const { return m_decoderFileHANDLE != INVALID_HANDLE_VALUE ? true : false; }
@@ -87,14 +87,14 @@ public:
 
 };
 
-class DecodeFile_exception : public std::exception
+class TTADecoder_exception : public std::exception
 {
 private:
 	tta_error m_err_code;
 
 public:
-	DecodeFile_exception(tta_error code) : m_err_code(code) {}
+	TTADecoder_exception(tta_error code) : m_err_code(code) {}
 	tta_error code() const { return m_err_code; }
 }; // class tta_exception
 
-#endif // #ifndef DECODEFILE_H
+#endif // #ifndef TTADECODER_H

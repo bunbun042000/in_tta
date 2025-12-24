@@ -10,7 +10,7 @@
     <ClCompile Include="ttaTag.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DecodeFile.cpp">
+    <ClCompile Include="TTADecoder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ID3v2TagExtension.cpp">
@@ -42,7 +42,7 @@
     <ClInclude Include="in_tta.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DecodeFile.h">
+    <ClInclude Include="TTADecoder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ID3v2TagExtension.h">
