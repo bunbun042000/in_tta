@@ -34,9 +34,9 @@ extern In_Module mod; // TODO: change if you called yours something else
 
 #define WASABI_API_MEMMGR memmgr
 
-static api_config* AGAVE_API_CONFIG = 0;
-static api_service* WASABI_API_SVC = 0;
-static api_memmgr* WASABI_API_MEMMGR = 0;
+static api_config* AGAVE_API_CONFIG = nullptr;
+static api_service* WASABI_API_SVC = nullptr;
+static api_memmgr* WASABI_API_MEMMGR = nullptr;
 
 static AlbumArtFactory albumArtFactory;
 static TTA_metaTagFactory metaTagFactory;
@@ -45,9 +45,9 @@ void Wasabi_Init()
 {
 	WASABI_API_SVC = reinterpret_cast<api_service*>(SendMessage(mod.hMainWindow, WM_WA_IPC, 0, IPC_GET_API_SERVICE));
 
-	if (WASABI_API_SVC == 0 || WASABI_API_SVC == reinterpret_cast<api_service*>(1))
+	if (WASABI_API_SVC == nullptr || WASABI_API_SVC == reinterpret_cast<api_service*>(1))
 	{
-		WASABI_API_SVC = 0;
+		WASABI_API_SVC = nullptr;
 		return;
 	}
 	else
