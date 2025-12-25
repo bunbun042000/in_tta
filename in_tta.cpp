@@ -27,14 +27,11 @@ You should have received a copy of the GNU General Public License along with enc
 If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include "in_tta.h"
+
 #include <Shlwapi.h>
 #include <type_traits>
 #include <strsafe.h>
-
-#include "wasabi.h"
-#include "AlbumArt.h"
-#include "ttaTag.h"
-#include "in_tta.h"
 
 #include <Winamp/in2.h>
 #include <Agave/Language/api_language.h>
@@ -44,6 +41,11 @@ If not, see <https://www.gnu.org/licenses/>.
 #include <taglib/tstring.h>
 
 #include "TTADecoder.h"
+
+#include "wasabi.h"
+#include "AlbumArt.h"
+#include "ttaTag.h"
+
 #include "VersionNo.h"
 #include "resource.h"
 
