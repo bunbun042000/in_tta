@@ -218,7 +218,7 @@ void getfileinfo(const wchar_t *file, wchar_t *title, int *length_in_ms)
 		// invalid filename may be playing file
 		if (nullptr != decoder_tta && decoder_tta->isValid() && decoder_tta->isDecodable())
 		{
-			*length_in_ms = decoder_tta->GetLengthbymsec();
+			*length_in_ms = decoder_tta->getLengthbymsec();
 		}
 		else
 		{
@@ -277,7 +277,7 @@ int play(const wchar_t *filename)
 
 	try
 	{
-		return_number = decoder_tta->SetFileName(filename);
+		return_number = decoder_tta->initDecoder(filename);
 	}
 
 	catch (TTADecoder_exception& ex)
@@ -286,8 +286,8 @@ int play(const wchar_t *filename)
 		return -1;
 	}
 
-	maxlatency = mod.outMod->Open(decoder_tta->GetSampleRate(),
-		decoder_tta->GetNumberofChannel(), static_cast<int>(decoder_tta->GetOutputBPS()), -1, -1);
+	maxlatency = mod.outMod->Open(decoder_tta->getSampleRate(),
+		decoder_tta->getNumberofChannel(), static_cast<int>(decoder_tta->getOutputBPS()), -1, -1);
 	if (maxlatency < 0)
 	{
 		stop();
@@ -299,11 +299,11 @@ int play(const wchar_t *filename)
 	}
 
 	// setup information display
-	mod.SetInfo(decoder_tta->GetBitrate(), decoder_tta->GetSampleRate() / 1000, decoder_tta->GetNumberofChannel(), 1);
+	mod.SetInfo(decoder_tta->getBitrate(), decoder_tta->getSampleRate() / 1000, decoder_tta->getNumberofChannel(), 1);
 
 	// initialize vis stuff
-	mod.SAVSAInit(maxlatency, decoder_tta->GetSampleRate());
-	mod.VSASetInfo(decoder_tta->GetNumberofChannel(), decoder_tta->GetSampleRate());
+	mod.SAVSAInit(maxlatency, decoder_tta->getSampleRate());
+	mod.VSASetInfo(decoder_tta->getNumberofChannel(), decoder_tta->getSampleRate());
 
 	// set the output plug-ins default volume
 	mod.outMod->SetVolume(-666);
@@ -328,7 +328,7 @@ void pause()
 {
 	if (nullptr != decoder_tta && decoder_tta->isValid() && decoder_tta->isDecodable())
 	{
-		decoder_tta->SetPaused(1);
+		decoder_tta->setPaused(1);
 	}
 	else
 	{
@@ -342,7 +342,7 @@ void unpause()
 {
 	if (nullptr != decoder_tta && decoder_tta->isValid() && decoder_tta->isDecodable())
 	{
-		decoder_tta->SetPaused(0);
+		decoder_tta->setPaused(0);
 	}
 	else
 	{
@@ -356,7 +356,7 @@ int ispaused()
 {
 	if (nullptr != decoder_tta && decoder_tta->isValid() && decoder_tta->isDecodable())
 	{
-		return decoder_tta->GetPaused();
+		return decoder_tta->getPaused();
 	}
 	else
 	{
@@ -399,7 +399,7 @@ int getlength()
 {
 	if (nullptr != decoder_tta && decoder_tta->isValid() && decoder_tta->isDecodable())
 	{
-		return decoder_tta->GetLengthbymsec();
+		return decoder_tta->getLengthbymsec();
 	}
 	else
 	{
@@ -411,7 +411,7 @@ int getoutputtime()
 {
 	if (nullptr != decoder_tta && decoder_tta->isValid() && decoder_tta->isDecodable())
 	{
-		return (int)(decoder_tta->GetDecodePosMs())
+		return (int)(decoder_tta->getDecodePosMs())
 			+ mod.outMod->GetOutputTime() - mod.outMod->GetWrittenTime();
 	}
 	else
@@ -424,7 +424,7 @@ void setoutputtime(int time_in_ms)
 {
 	if (nullptr != decoder_tta && decoder_tta->isValid() && decoder_tta->isDecodable())
 	{
-		decoder_tta->SetSeekNeeded(time_in_ms);
+		decoder_tta->setSeekNeeded(time_in_ms);
 	}
 	else
 	{
@@ -453,8 +453,8 @@ static void do_vis(unsigned char *data, int count, int bps, long double position
 
 	if (nullptr != decoder_tta && decoder_tta->isValid() && decoder_tta->isDecodable())
 	{
-		mod.SAAddPCMData(data, decoder_tta->GetNumberofChannel(), bps, static_cast<int>(position));
-		mod.VSAAddPCMData(data, decoder_tta->GetNumberofChannel(), bps, static_cast<int>(position));
+		mod.SAAddPCMData(data, decoder_tta->getNumberofChannel(), bps, static_cast<int>(position));
+		mod.VSAAddPCMData(data, decoder_tta->getNumberofChannel(), bps, static_cast<int>(position));
 	}
 	else
 	{
@@ -482,7 +482,7 @@ DWORD WINAPI __stdcall DecoderThread(void *p)
 		// Do nothing
 	}
 
-	int bitrate = decoder_tta->GetBitrate();
+	int bitrate = decoder_tta->getBitrate();
 
 	while (!killDecoderThread)
 	{
@@ -497,9 +497,9 @@ DWORD WINAPI __stdcall DecoderThread(void *p)
 			// Do nothing
 		}
 
-		if (decoder_tta->GetSeekNeeded() != -1)
+		if (decoder_tta->getSeekNeeded() != -1)
 		{
-			mod.outMod->Flush((int)decoder_tta->SeekPosition(&done));
+			mod.outMod->Flush((int)decoder_tta->seekPosition(&done));
 		}
 		else
 		{
@@ -515,20 +515,20 @@ DWORD WINAPI __stdcall DecoderThread(void *p)
 			}
 			else
 			{
-				mod.SetInfo(bitrate, decoder_tta->GetSampleRate() / 1000, decoder_tta->GetNumberofChannel(), 1);
+				mod.SetInfo(bitrate, decoder_tta->getSampleRate() / 1000, decoder_tta->getNumberofChannel(), 1);
 			}
 		}
 		else if (mod.outMod->CanWrite() >=
-			((PLAYING_BUFFER_LENGTH * decoder_tta->GetNumberofChannel() *
-				decoder_tta->GetByteSize()) << (mod.dsp_isactive() ? 1 : 0)))
+			((PLAYING_BUFFER_LENGTH * decoder_tta->getNumberofChannel() *
+				decoder_tta->getByteSize()) << (mod.dsp_isactive() ? 1 : 0)))
 		{
 			try
 			{
-				decoded_samples = decoder_tta->GetSamples(pcm_buffer, PLAYING_BUFFER_SIZE, &bitrate);
+				decoded_samples = decoder_tta->getSamples(pcm_buffer, PLAYING_BUFFER_SIZE, &bitrate);
 			}
 			catch (TTADecoder_exception &ex)
 			{
-				tta_error_message(ex.code(), decoder_tta->GetFileName());
+				tta_error_message(ex.code(), decoder_tta->getFileName());
 				PostMessage(mod.hMainWindow, WM_WA_MPEG_EOF, 0, 0);
 				mod.SetInfo(0, 0, 0, 1);
 				mod.outMod->Close();
@@ -551,25 +551,25 @@ DWORD WINAPI __stdcall DecoderThread(void *p)
 			}
 			else
 			{
-				do_vis(pcm_buffer, decoded_samples, static_cast<int>(decoder_tta->GetOutputBPS()), decoder_tta->GetDecodePosMs());
+				do_vis(pcm_buffer, decoded_samples, static_cast<int>(decoder_tta->getOutputBPS()), decoder_tta->getDecodePosMs());
 				if (mod.dsp_isactive())
 				{
-					decoded_samples = mod.dsp_dosamples(reinterpret_cast<short*>(pcm_buffer), decoded_samples, static_cast<int>(decoder_tta->GetOutputBPS()),
-						decoder_tta->GetNumberofChannel(), decoder_tta->GetSampleRate());
+					decoded_samples = mod.dsp_dosamples(reinterpret_cast<short*>(pcm_buffer), decoded_samples, static_cast<int>(decoder_tta->getOutputBPS()),
+						decoder_tta->getNumberofChannel(), decoder_tta->getSampleRate());
 				}
 				else
 				{
 					// Do nothing
 				}
-				mod.outMod->Write(reinterpret_cast<char *>(pcm_buffer), decoded_samples * decoder_tta->GetNumberofChannel()
-					* static_cast<int>(decoder_tta->GetOutputBPS() >> 3));
+				mod.outMod->Write(reinterpret_cast<char *>(pcm_buffer), decoded_samples * decoder_tta->getNumberofChannel()
+					* static_cast<int>(decoder_tta->getOutputBPS() >> 3));
 			}
 
-			mod.SetInfo(bitrate, decoder_tta->GetSampleRate() / 1000, decoder_tta->GetNumberofChannel(), 1);
+			mod.SetInfo(bitrate, decoder_tta->getSampleRate() / 1000, decoder_tta->getNumberofChannel(), 1);
 		}
 		else
 		{
-			mod.SetInfo(bitrate, decoder_tta->GetSampleRate() / 1000, decoder_tta->GetNumberofChannel(), 1);
+			mod.SetInfo(bitrate, decoder_tta->getSampleRate() / 1000, decoder_tta->getNumberofChannel(), 1);
 
 			Sleep(1);
 		}
@@ -646,7 +646,7 @@ extern "C"
 
 		try
 		{
-			dec->SetFileName(filename);
+			dec->initDecoder(filename);
 		}
 
 		catch (TTADecoder_exception &ex)
@@ -655,10 +655,10 @@ extern "C"
 			return static_cast<intptr_t>(0);
 		}
 
-		*bps = dec->GetBitsperSample();
-		*nch = dec->GetNumberofChannel();
-		*srate = dec->GetSampleRate();
-		*size = dec->GetDataLength() * (*bps / 8) * (*nch);
+		*bps = dec->getBitsperSample();
+		*nch = dec->getNumberofChannel();
+		*srate = dec->getSampleRate();
+		*size = dec->getDataLength() * (*bps / 8) * (*nch);
 
 		return reinterpret_cast<intptr_t>(dec);
 	}
@@ -683,17 +683,17 @@ extern "C"
 
 		try
 		{
-			decoded_samples = dec->GetSamples(reinterpret_cast<BYTE *>(dest), static_cast<size_t>(len), &bitrate);
+			decoded_samples = dec->getSamples(reinterpret_cast<BYTE *>(dest), static_cast<size_t>(len), &bitrate);
 		}
 		catch (TTADecoder_exception &ex)
 		{
-			tta_error_message(ex.code(), dec->GetFileName());
+			tta_error_message(ex.code(), dec->getFileName());
 			dest_used = -1;
 		}
 
 		if (0 != decoded_samples)
 		{
-			decoded_bytes = decoded_samples * dec->GetBitsperSample() / 8 * dec->GetNumberofChannel();
+			decoded_bytes = decoded_samples * dec->getBitsperSample() / 8 * dec->getNumberofChannel();
 		}
 		else
 		{
@@ -712,8 +712,8 @@ extern "C"
 		TTADecoder *dec = reinterpret_cast<TTADecoder *>(handle);
 		if (nullptr != dec && dec->isValid() && dec->isDecodable())
 		{
-			dec->SetSeekNeeded(millisecs);
-			dec->SeekPosition(&done);
+			dec->setSeekNeeded(millisecs);
+			dec->seekPosition(&done);
 		}
 		else
 		{
