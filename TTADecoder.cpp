@@ -19,18 +19,58 @@ If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "TTADecoder.h"
-#include "libtta.h"
+#include <libtta.h>
 
 TTAint32 CALLBACK buffer_read_callback(TTA_io_callback* io, TTAuint8* buffer, TTAuint32 size)
 {
 	TTA_io_callback_wrapper* iocb = reinterpret_cast<TTA_io_callback_wrapper*>(io);
-	TTAint32 result = 1;
+	TTAint32 result = 0;
 
-	result = iocb->remain_data_buffer.current_end_pos - iocb->remain_data_buffer.current_pos > size
-		? iocb->remain_data_buffer.current_end_pos - iocb->remain_data_buffer.current_pos : size;
+	if (iocb->remain_data_buffer.current_end_pos > iocb->remain_data_buffer.current_pos)
+	{
+		if (iocb->remain_data_buffer.current_end_pos - iocb->remain_data_buffer.current_pos > size)
+		{
+			result = size;
+			memcpy_s(buffer, size, iocb->remain_data_buffer.buffer + iocb->remain_data_buffer.current_pos, result);
+			iocb->remain_data_buffer.current_pos += result;
+		}
+		else
+		{
+			result = iocb->remain_data_buffer.current_end_pos - iocb->remain_data_buffer.current_pos;
+			memcpy_s(buffer,size, iocb->remain_data_buffer.buffer + iocb->remain_data_buffer.current_pos, result);
+			iocb->remain_data_buffer.current_pos = iocb->remain_data_buffer.current_end_pos;
+		}
+	}
+	else 
+	{
+		if (iocb->remain_data_buffer.data_length - iocb->remain_data_buffer.current_pos > size)
+		{
+			result = size;
+			memcpy_s(buffer, size, iocb->remain_data_buffer.buffer + iocb->remain_data_buffer.current_pos, result);
+			iocb->remain_data_buffer.current_pos += result;
+		}
+		else
+		{
+			auto divided_size = iocb->remain_data_buffer.data_length - iocb->remain_data_buffer.current_pos;
+			memcpy_s(buffer, size, iocb->remain_data_buffer.buffer + iocb->remain_data_buffer.current_pos, divided_size);
+			result = size - divided_size;
+			if (iocb->remain_data_buffer.current_end_pos > result)
+			{
+				memcpy_s(buffer + divided_size, size - divided_size, iocb->remain_data_buffer.buffer, result);
+				iocb->remain_data_buffer.current_pos = result;
+				result += divided_size;
+			}
+			else
+			{
+				memcpy_s(buffer + divided_size, size - divided_size, iocb->remain_data_buffer.buffer, iocb->remain_data_buffer.current_end_pos);
+				iocb->remain_data_buffer.current_pos = iocb->remain_data_buffer.current_end_pos;
+				result = divided_size + iocb->remain_data_buffer.current_pos;
+			}
 
-	memcpy_s(buffer, size, iocb->remain_data_buffer.buffer + iocb->remain_data_buffer.current_pos, result);
-	iocb->remain_data_buffer.current_pos += result;
+		}
+	}
+
+
 	if (iocb->remain_data_buffer.current_end_pos == iocb->remain_data_buffer.current_pos)
 	{
 		iocb->remain_data_buffer.current_pos = 0;
@@ -41,7 +81,7 @@ TTAint32 CALLBACK buffer_read_callback(TTA_io_callback* io, TTAuint8* buffer, TT
 		// Do nothing
 	}
 
-	return static_cast<TTAint32>(result);
+	return result;
 } // read_callback
 
 TTAint32 CALLBACK buffer_write_callback(TTA_io_callback* io, TTAuint8* buffer, TTAuint32 size)
@@ -209,7 +249,7 @@ int TTADecoder::init()
 		}
 		else
 		{
-			// Do nothing
+			m_TTA->init_set_info(&m_tta_info);
 		}
 	}
 
@@ -308,6 +348,7 @@ int TTADecoder::initDecoder(const wchar_t *filename)
 int	TTADecoder::initDecoder(int32_t bps, int32_t nch)
 {
 	m_isFile = false;
+	m_tta_info.format = 1;
 	m_tta_info.bps = bps;
 	m_tta_info.nch = nch;
 
@@ -374,7 +415,7 @@ long double TTADecoder::seekPosition(int *done)
 	return m_decode_pos_ms;
 }
 
-int  TTADecoder::getSamples(BYTE *buffer, size_t buffersize, int *current_bitrate)
+int  TTADecoder::getSamples(std::byte *buffer, size_t buffersize, int *current_bitrate)
 {
 	int skip_len = 0;
 	int len = 0;
@@ -404,7 +445,7 @@ int  TTADecoder::getSamples(BYTE *buffer, size_t buffersize, int *current_bitrat
 
 	try 
 	{
-		len = m_TTA->process_stream(buffer, buffersize);
+		len = m_TTA->process_stream(reinterpret_cast<TTAuint8 *>(buffer), buffersize);
 	}
 
 	catch (tta::tta_exception &ex)

@@ -524,7 +524,7 @@ DWORD WINAPI __stdcall DecoderThread(void *p)
 		{
 			try
 			{
-				decoded_samples = decoder_tta->getSamples(pcm_buffer, PLAYING_BUFFER_SIZE, &bitrate);
+				decoded_samples = decoder_tta->getSamples(reinterpret_cast<std::byte *>(pcm_buffer), PLAYING_BUFFER_SIZE, &bitrate);
 			}
 			catch (TTADecoder_exception &ex)
 			{
@@ -683,7 +683,7 @@ extern "C"
 
 		try
 		{
-			decoded_samples = dec->getSamples(reinterpret_cast<BYTE *>(dest), static_cast<size_t>(len), &bitrate);
+			decoded_samples = dec->getSamples(reinterpret_cast<std::byte *>(dest), static_cast<size_t>(len), &bitrate);
 		}
 		catch (TTADecoder_exception &ex)
 		{

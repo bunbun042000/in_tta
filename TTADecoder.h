@@ -83,7 +83,7 @@ public:
 	int				initDecoder(const wchar_t *filename);
 	int				initDecoder(int32_t bps, int32_t nch);
 	const wchar_t  *getFileName() { return m_FileName.c_str(); }
-	int				getSamples(BYTE *buffer, size_t buffersize, int *current_bitrate);
+	int				getSamples(std::byte *buffer, size_t buffersize, int *current_bitrate);
 
 	int				getPaused() const{ return m_paused; }
 	void			setPaused(int p) { m_paused = p; }
