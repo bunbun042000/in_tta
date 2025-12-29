@@ -160,7 +160,7 @@ static void tta_error_message(int error, const wchar_t *filename)
 
 }
 
-static BOOL CALLBACK about_dialog(HWND dialog, UINT message, WPARAM wparam, LPARAM lparam)
+static INT_PTR CALLBACK about_dialog(HWND dialog, UINT message, WPARAM wparam, LPARAM lparam)
 {
 	switch (message)
 	{
