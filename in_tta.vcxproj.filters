@@ -7,10 +7,25 @@
     <ClCompile Include="in_tta.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MediaLibrary.cpp">
+    <ClCompile Include="ttaTag.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DecodeFile.cpp">
+    <ClCompile Include="TTADecoder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ID3v2TagExtension.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MetaTag.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="agaveCommon.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="wasabi.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MetaTagFactory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -18,7 +33,7 @@
     <ClInclude Include="AlbumArt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MediaLibrary.h">
+    <ClInclude Include="ttaTag.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
@@ -27,7 +42,22 @@
     <ClInclude Include="in_tta.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DecodeFile.h">
+    <ClInclude Include="TTADecoder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ID3v2TagExtension.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="agaveCommon.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="wasabi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MetaTag.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MetaTagFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -57,5 +87,6 @@
     <None Include="info.ico">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="cpp.hint" />
   </ItemGroup>
 </Project>
