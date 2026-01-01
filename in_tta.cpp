@@ -562,7 +562,7 @@ DWORD WINAPI __stdcall DecoderThread(void *p)
 					// Do nothing
 				}
 				mod.outMod->Write(reinterpret_cast<char *>(pcm_buffer), decoded_samples * decoder_tta->getNumberofChannel()
-					* static_cast<int>(decoder_tta->getOutputBPS() >> 3));
+					* decoder_tta->getByteSize());
 			}
 
 			mod.SetInfo(bitrate, decoder_tta->getSampleRate() / 1000, decoder_tta->getNumberofChannel(), 1);
