@@ -163,7 +163,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)libtta-cpp;$(SolutionDir)common;$(SolutionDir)libraries\include;$(ProgramFiles) (x86)\Winamp SDK;$(ProgramFiles) (x86)\Winamp SDK\Wasabi;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)libtta-cpp;$(SolutionDir)common;$(SolutionDir)libraries\include;$(SolutionDir)../../../projects/Winamp SDK\Wasabi;$(SolutionDir)../../../projects/Winamp SDK;$(ProgramFiles) (x86)\Winamp SDK;$(ProgramFiles) (x86)\Winamp SDK\Wasabi;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;TAGLIB_STATIC;ZLIB_WINAPI;_USRDLL;_ENABLE_EXTENDED_ALIGNED_STORAGE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessToFile>false</PreprocessToFile>
       <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
@@ -271,7 +271,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <PreprocessorDefinitions>WIN32;_WINDOWS;TAGLIB_STATIC;ZLIB_WINAPI;_USRDLL;_ENABLE_EXTENDED_ALIGNED_STORAGE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)common;$(SolutionDir)libtta-cpp;$(SolutionDir)libraries\include;$(ProgramFiles) (x86)\Winamp SDK;$(ProgramFiles) (x86)\Winamp SDK\Wasabi;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)libtta-cpp;$(SolutionDir)common;$(SolutionDir)libraries\include;$(SolutionDir)../../../projects/Winamp SDK\Wasabi;$(SolutionDir)../../../projects/Winamp SDK;$(ProgramFiles) (x86)\Winamp SDK;$(ProgramFiles) (x86)\Winamp SDK\Wasabi;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WarningLevel>Level3</WarningLevel>
       <TreatWarningAsError>false</TreatWarningAsError>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
