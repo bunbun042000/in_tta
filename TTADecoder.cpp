@@ -54,7 +54,7 @@ TTAint32 CALLBACK buffer_read_callback(TTA_io_callback* io, TTAuint8* buffer, TT
 			auto divided_size = iocb->remain_data_buffer.data_length - iocb->remain_data_buffer.current_pos;
 			memcpy_s(buffer, size, iocb->remain_data_buffer.buffer + iocb->remain_data_buffer.current_pos, divided_size);
 			result = size - divided_size;
-			if (iocb->remain_data_buffer.current_end_pos > result)
+			if (iocb->remain_data_buffer.current_end_pos > static_cast<size_t>(result))
 			{
 				memcpy_s(buffer + divided_size, size - divided_size, iocb->remain_data_buffer.buffer, result);
 				iocb->remain_data_buffer.current_pos = result;
